@@ -245,14 +245,19 @@ function continueAsGuest() {
     isGuest = true;
     console.log('✅ Guest mode activated. isGuest:', isGuest);
 
-    // Update UI
+    // Update UI - preserve online counter
     const headerRight = document.querySelector('.header-right');
+    const onlineCounter = headerRight.querySelector('.online-counter');
     headerRight.innerHTML = `
         <div class="user-menu">
             <i class="fa-solid fa-user-secret" style="font-size: 1.5rem; color: #888;"></i>
             <span class="user-name">Gast</span>
         </div>
     `;
+    // Re-add online counter at the beginning
+    if (onlineCounter) {
+        headerRight.insertBefore(onlineCounter, headerRight.firstChild);
+    }
 
     showNotification('Als Gast angemeldet! Starte Chat... 👋');
 

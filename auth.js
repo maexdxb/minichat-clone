@@ -138,6 +138,9 @@ class AuthManager {
         const avatarUrl = this.currentUser.user_metadata?.avatar_url ||
             `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.currentUser.id}`;
 
+        // Preserve online counter
+        const onlineCounter = headerRight.querySelector('.online-counter');
+
         // Replace login button with user menu
         headerRight.innerHTML = `
             <div class="user-menu">
@@ -148,6 +151,11 @@ class AuthManager {
                 </button>
             </div>
         `;
+
+        // Re-add online counter
+        if (onlineCounter) {
+            headerRight.insertBefore(onlineCounter, headerRight.firstChild);
+        }
 
         // Add logout event listener
         const btnLogout = document.querySelector('.btn-logout');
@@ -165,11 +173,18 @@ class AuthManager {
 
         if (!headerRight) return;
 
+        // Preserve online counter
+        const onlineCounter = headerRight.querySelector('.online-counter');
+
         headerRight.innerHTML = `
-            <button class="btn-login">
-                <i class="fa-solid fa-user"></i> Anmelden
-            </button>
+            <button class="btn-guest"><i class="fa-solid fa-user-secret"></i> Als Gast fortfahren</button>
+            <button class="btn-login"><i class="fa-solid fa-user"></i> Anmelden</button>
         `;
+
+        // Re-add online counter
+        if (onlineCounter) {
+            headerRight.insertBefore(onlineCounter, headerRight.firstChild);
+        }
 
         // Re-attach login event listener
         const btnLogin = document.querySelector('.btn-login');
