@@ -174,7 +174,9 @@ function setupWebRTCCallbacks() {
 
     // Online count update
     webrtcManager.onOnlineCount = (count) => {
-        onlineCount.textContent = count.toLocaleString('de-DE');
+        if (onlineCount) {
+            onlineCount.textContent = count.toLocaleString('de-DE');
+        }
     };
 }
 
