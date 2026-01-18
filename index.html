@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Siagechat - Video Chat</title>
+    <link rel="stylesheet" href="style.css?v=16">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="main-header">
+        <div class="logo-container">
+            <span class="logo-icon"><i class="fa-solid fa-comment-dots"></i></span>
+            <span class="logo-text">Siagechat</span>
+        </div>
+        <nav class="main-nav">
+            <a href="#" class="nav-item active"><i class="fa-solid fa-video"></i> Video-Chat</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Freunde finden</a>
+            <a href="#" class="nav-item"><i class="fa-solid fa-table-cells-large"></i> Neue Fotos</a>
+        </nav>
+        <div class="header-right">
+            <button class="btn-guest"><i class="fa-solid fa-user-secret"></i> Als Gast fortfahren</button>
+            <button class="btn-login"><i class="fa-solid fa-user"></i> Anmelden</button>
+        </div>
+    </header>
+
+    <main class="video-stage">
+        <div class="video-container local-video">
+            <video id="localVideo" autoplay muted playsinline></video>
+            <div class="local-overlay">
+                <div class="overlay-content">
+                    <i class="fa-solid fa-video"></i>
+                    <p>Deine Kamera</p>
+                </div>
+            </div>
+        </div>
+        <div class="video-container remote-video">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <div class="remote-loader idle">
+                <div class="loader-content">
+                    <div class="spinner"></div>
+                    <p class="search-text">Klicke auf Weiter für die nächste Person</p>
+                </div>
+            </div>
+            <div id="noPartner" class="no-partner" style="display: none;">
+                <i class="fa-solid fa-user-slash"></i>
+                <p>Kein Partner gefunden</p>
+                <button class="btn-retry" onclick="skipPartner()">Wiederholen</button>
+            </div>
+        </div>
+    </main>
+
+    <section class="controls-bar">
+        <div class="control-group start-stop">
+            <button class="btn-control btn-stop" disabled>
+                <i class="fa-solid fa-stop"></i>
+                <span>Stopp</span>
+            </button>
+            <button class="btn-control btn-next" disabled>
+                <i class="fa-solid fa-forward"></i>
+                <span>Weiter</span>
+            </button>
+        </div>
+        <div class="control-group settings">
+            <div class="setting-item country">
+                <span class="setting-label">Land</span>
+                <span class="flag-icon"><img src="https://flagsapi.com/DE/flat/64.png" alt="Germany Flag"></span>
+            </div>
+            <div class="setting-item gender">
+                <span class="setting-label">Ich bin</span>
+                <span class="gender-icon"><i class="fa-solid fa-user"></i></span>
+            </div>
+        </div>
+        <div class="disclaimer-text">
+            Durch Klicken auf die Schaltfläche "Start" akzeptieren Sie die <a href="#">Regeln</a> des Videochats.<br>
+            Verstöße gegen die Regeln führen zur Sperrung. Bitte stellen Sie sicher, dass Ihr Gesicht für<br>
+            die andere Person sichtbar ist.
+        </div>
+    </section>
+
+    <footer class="chat-footer">
+        <div class="chat-input-container">
+            <input type="text" placeholder="Nachricht eingeben" class="chat-input" id="chatInput">
+            <button class="emoji-btn"><i class="fa-regular fa-face-smile"></i></button>
+        </div>
+    </footer>
+
+    <!-- Country Selection Modal -->
+    <div id="countryModal" class="modal">
+        <div class="modal-content">
+            <h2>Land auswählen</h2>
+            <div class="country-list">
+                <div class="country-option" data-country="DE">
+                    <img src="https://flagsapi.com/DE/flat/64.png" alt="Germany"> Deutschland
+                </div>
+                <div class="country-option" data-country="US">
+                    <img src="https://flagsapi.com/US/flat/64.png" alt="USA"> USA
+                </div>
+                <div class="country-option" data-country="GB">
+                    <img src="https://flagsapi.com/GB/flat/64.png" alt="UK"> Vereinigtes Königreich
+                </div>
+                <div class="country-option" data-country="FR">
+                    <img src="https://flagsapi.com/FR/flat/64.png" alt="France"> Frankreich
+                </div>
+                <div class="country-option" data-country="ES">
+                    <img src="https://flagsapi.com/ES/flat/64.png" alt="Spain"> Spanien
+                </div>
+            </div>
+            <button class="close-modal">Schließen</button>
+        </div>
+    </div>
+
+    <!-- Gender Selection Modal -->
+    <div id="genderModal" class="modal">
+        <div class="modal-content">
+            <h2>Geschlecht auswählen</h2>
+            <div class="gender-list">
+                <div class="gender-option" data-gender="male">
+                    <i class="fa-solid fa-mars"></i> Männlich
+                </div>
+                <div class="gender-option" data-gender="female">
+                    <i class="fa-solid fa-venus"></i> Weiblich
+                </div>
+                <div class="gender-option" data-gender="other">
+                    <i class="fa-solid fa-user"></i> Andere
+                </div>
+            </div>
+            <button class="close-modal">Schließen</button>
+        </div>
+    </div>
+
+    <script src="config.js?v=12"></script>
+    <script src="auth.js?v=12"></script>
+    <script src="swipe.js?v=12"></script>
+    <script src="webrtc.js?v=12"></script>
+    <script src="script.js?v=12"></script>
+</body>
+
+</html>

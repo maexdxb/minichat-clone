@@ -1,0 +1,20 @@
+{
+    "name": "siagechat",
+    "version": "1.0.0",
+    "description": "Random video chat application with Google authentication",
+    "scripts": {
+        "dev": "npx serve .",
+        "deploy": "vercel --prod"
+    },
+    "keywords": [
+        "video-chat",
+        "webrtc",
+        "supabase",
+        "random-chat"
+    ],
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "serve": "^14.2.0"
+    }
+}
