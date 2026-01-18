@@ -9,12 +9,30 @@ class WebRTCManager {
         this.isConnected = false;
         this.isSearching = false;
 
-        // ICE servers (STUN for NAT traversal)
+        // ICE servers (STUN + TURN for NAT traversal)
         this.iceServers = {
             iceServers: [
+                // Google STUN servers
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
+                { urls: 'stun:stun2.l.google.com:19302' },
+
+                // Free TURN servers (Metered)
+                {
+                    urls: 'turn:openrelay.metered.ca:80',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                },
+                {
+                    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+                    username: 'openrelayproject',
+                    credential: 'openrelayproject'
+                }
             ]
         };
 
