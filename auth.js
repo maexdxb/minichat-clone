@@ -186,7 +186,17 @@ class AuthManager {
             headerRight.insertBefore(onlineCounter, headerRight.firstChild);
         }
 
-        // Re-attach login event listener
+        // Re-attach event listeners
+        const btnGuest = document.querySelector('.btn-guest');
+        if (btnGuest) {
+            btnGuest.addEventListener('click', () => {
+                // Call continueAsGuest from global scope
+                if (typeof continueAsGuest === 'function') {
+                    continueAsGuest();
+                }
+            });
+        }
+
         const btnLogin = document.querySelector('.btn-login');
         if (btnLogin) {
             btnLogin.addEventListener('click', () => this.signInWithGoogle());
