@@ -141,9 +141,6 @@ function setupWebRTCCallbacks() {
         showNotification('Partner hat getrennt. Klicke auf Weiter.');
 
         // Removed auto-search as per user request
-        if (noPartner) {
-            noPartner.style.display = 'flex';
-        }
         remoteLoader.style.display = 'none';
 
         // Show Next Button prominence?
@@ -164,7 +161,7 @@ function setupWebRTCCallbacks() {
         remoteVideo.srcObject = stream;
         remoteVideo.style.display = 'block';
         toggleReportButton(true);
-        noPartner.style.display = 'none';
+        // noPartner removed
 
         console.log('✅ Remote video should now be visible');
     };
@@ -174,7 +171,7 @@ function setupWebRTCCallbacks() {
         console.log('🔍 Suche Partner...');
         remoteLoader.style.display = 'flex';
         remoteVideo.style.display = 'none';
-        noPartner.style.display = 'none';
+        // noPartner removed
 
         // Remove idle class - now searching
         const remoteLoaderEl = document.querySelector('.remote-loader');
@@ -359,7 +356,7 @@ function stopChat() {
     remoteVideo.style.display = 'none';
     localOverlay.style.display = 'flex';
     remoteLoader.style.display = 'flex';
-    noPartner.style.display = 'none';
+    // noPartner removed
     toggleReportButton(false);
 
     // Show idle state - not searching
@@ -430,7 +427,7 @@ async function skipPartner() {
     remoteVideo.srcObject = null;
     remoteVideo.style.display = 'none';
     remoteLoader.style.display = 'flex';
-    noPartner.style.display = 'none';
+    // noPartner removed
     toggleReportButton(false);
 
     // Remove idle class - now searching
@@ -476,7 +473,7 @@ function findPartner() {
     webrtcManager.findPartner(userData);
 
     remoteLoader.style.display = 'flex';
-    noPartner.style.display = 'none';
+    // noPartner removed
     remoteVideo.style.display = 'none';
 }
 
@@ -788,7 +785,7 @@ async function startChat() {
 
         // Show Remote Loader (Waiting for partner)
         remoteLoader.style.display = 'flex';
-        noPartner.style.display = 'none';
+        // noPartner removed
 
         // Remove idle class
         remoteLoader.classList.remove('idle');
