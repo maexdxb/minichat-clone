@@ -107,6 +107,15 @@ class WebRTCManager {
             this.partnerSupabaseId = data.partnerSupabaseId;
             console.log('👤 Partner Supabase ID:', this.partnerSupabaseId);
 
+            // Debug Notification
+            if (this.partnerSupabaseId) {
+                console.log('✅ Partner identified:', this.partnerSupabaseId);
+            } else {
+                console.error('❌ Partner ID MISSING! Server version check required.');
+                // Show warning to user (dev mode)
+                alert('DEBUG: Partner ID fehlt! Bitte Render Server neu deployen.');
+            }
+
             if (this.onPartnerFound) {
                 this.onPartnerFound(data.partnerId, data.partnerSupabaseId);
             }
