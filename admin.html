@@ -225,7 +225,12 @@
 <body>
     <div class="container">
         <h1><i class="fas fa-shield-alt"></i> Admin Panel</h1>
-        <p class="subtitle">Nutzer-Verwaltung für Siagechat</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <p class="subtitle" style="margin-bottom: 0;">Nutzer-Verwaltung für Siagechat</p>
+            <button class="btn btn-primary" onclick="loadUsers()">
+                <i class="fas fa-sync-alt"></i> Aktualisieren
+            </button>
+        </div>
 
         <div id="error-message" class="error" style="display: none;"></div>
 
@@ -362,10 +367,27 @@
 
                 log('✅ Admin-Rechte bestätigt!');
 
-                // Load users
+                // Start Heartbeat (damit Admin auch online bleibt)
+                setInterval(async () => {
+                    if (session && session.user) {
+                        await supabaseClient.from('user_management').upsert({
+                            user_id: session.user.id,
+                            email: session.user.email,
+                            last_seen: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_id' });
+                    }
+                }, 60000); // Jede Minute
+
+                // Load users initially
                 log('📦 Lade User-Liste...');
                 await loadUsers();
                 log('✅ User-Liste geladen!');
+
+                // Auto-Refresh Users Table
+                setInterval(() => {
+                    loadUsers();
+                }, 30000); // Alle 30 Sekunden
 
             } catch (error) {
                 console.error('Init error:', error);
