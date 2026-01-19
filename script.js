@@ -730,14 +730,22 @@ async function performBanCheck() {
     return false; // Not banned
 }
 
-// Start Chat Function (Fixed: Direct Camera Access)
+// Start Chat Function (Fixed: Optimistic UI + Direct Access)
 async function startChat() {
+    console.log('🎬 startChat called');
+
     // Check ban status first
     if (await performBanCheck()) return;
 
-    // Request permissions DIRECTLY (bypassing manager to ensure it works)
+    // Optimistic UI: Hide overlay immediately so user knows something is happening
+    if (localOverlay) localOverlay.style.display = 'none';
+    if (localVideo) localVideo.style.display = 'block';
+
+    showNotification('Starte Kamera...');
+
+    // Request permissions DIRECTLY
     try {
-        console.log('🎬 Starting chat (Direct API)...');
+        console.log('📹 Requesting UserMedia...');
 
         const stream = await navigator.mediaDevices.getUserMedia({
             video: {
@@ -747,10 +755,14 @@ async function startChat() {
             audio: true
         });
 
+        console.log('✅ Stream acquiring success:', stream.id);
+
         // Show local video
-        localVideo.srcObject = stream;
-        localVideo.style.display = 'block';
-        localOverlay.style.display = 'none';
+        if (localVideo) {
+            localVideo.srcObject = stream;
+            // Explicitly play to prevent "frozen first frame" or black screen
+            localVideo.play().catch(e => console.error('Play error:', e));
+        }
 
         isActive = true;
 
@@ -783,11 +795,11 @@ async function startChat() {
         }
 
         // Show Remote Loader (Waiting for partner)
-        remoteLoader.style.display = 'flex';
-        noPartner.style.display = 'none';
+        if (remoteLoader) remoteLoader.style.display = 'flex';
+        if (noPartner) noPartner.style.display = 'none';
 
         // Remove idle class
-        remoteLoader.classList.remove('idle');
+        if (remoteLoader) remoteLoader.classList.remove('idle');
         const searchText = document.querySelector('.search-text');
         if (searchText) searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
 
@@ -801,6 +813,11 @@ async function startChat() {
 
     } catch (error) {
         console.error('Error accessing media devices:', error);
+
+        // Restore overlay if we failed
+        if (localOverlay) localOverlay.style.display = 'flex';
+        if (localVideo) localVideo.style.display = 'none';
+
         alert('Fehler: Könnte nicht auf Kamera/Mikrofon zugreifen: ' + error.message);
         isActive = false;
     }
