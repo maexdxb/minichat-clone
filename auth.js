@@ -35,6 +35,7 @@ class AuthManager {
                 if (session) {
                     this.currentUser = session.user;
                     this.updateUIForLoggedInUser();
+                    this.syncUserToDB(session.user);
                 } else {
                     this.currentUser = null;
                     this.updateUIForLoggedOutUser();
@@ -215,6 +216,31 @@ class AuthManager {
         if (mockUser && !this.currentUser) {
             this.currentUser = JSON.parse(mockUser);
             this.updateUIForLoggedInUser();
+        }
+    }
+
+    // Sync user to database for admin panel
+    async syncUserToDB(user) {
+        if (!user || !this.supabase) return;
+
+        try {
+            const { error } = await this.supabase
+                .from('user_management')
+                .upsert({
+                    user_id: user.id,
+                    email: user.email,
+                    display_name: user.user_metadata?.full_name || user.email,
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id' });
+
+            if (error) {
+                // Ignore error if table doesn't exist yet (fail silently)
+                console.warn('Sync to DB failed (table might be missing):', error.message);
+            } else {
+                console.log('✅ User synced to DB for admin panel');
+            }
+        } catch (err) {
+            console.error('Sync error:', err);
         }
     }
 }
