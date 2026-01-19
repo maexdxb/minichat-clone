@@ -545,17 +545,41 @@ function showNotification(text) {
     }, 3000);
 }
 
-// Animate Online Count (fallback if WebRTC not connected)
-function animateOnlineCount() {
-    // Only animate if not receiving real updates
-    setInterval(() => {
-        if (!webrtcManager || !webrtcManager.socket || !webrtcManager.socket.connected) {
-            const currentCount = parseInt(onlineCount.textContent.replace(/\./g, ''));
-            const change = Math.floor(Math.random() * 20) - 10;
-            const newCount = Math.max(100000, currentCount + change);
-            onlineCount.textContent = newCount.toLocaleString('de-DE');
+// Update Online Count from Database
+async function updateOnlineCount() {
+    try {
+        if (!authManager || !authManager.supabase) return;
+
+        const { data, error } = await authManager.supabase.rpc('get_active_user_count');
+
+        if (error) {
+            console.warn('Could not fetch online count:', error);
+            return;
         }
-    }, 5000);
+
+        // Update UI
+        if (onlineCount && data !== null) {
+            // Ensure at least 1 user (me) is shown if logged in
+            let count = data;
+            if (authManager.isLoggedIn() && count < 1) count = 1;
+
+            onlineCount.textContent = count.toLocaleString('de-DE');
+            console.log('📊 Active users:', count);
+        }
+    } catch (err) {
+        console.error('Error updating count:', err);
+    }
+}
+
+// Animate Online Count (now actually polls DB)
+function animateOnlineCount() {
+    // Initial fetch
+    setTimeout(updateOnlineCount, 1000);
+
+    // Poll every 30 seconds
+    setInterval(() => {
+        updateOnlineCount();
+    }, 30000);
 }
 
 // Initial button states

@@ -397,7 +397,7 @@
             const tbody = document.getElementById('users-tbody');
             tbody.innerHTML = users.map(user => {
                 const lastSeen = user.last_seen ? new Date(user.last_seen) : null;
-                const isOnline = lastSeen && lastSeen > twoMinutesAgo;
+                const isOnline = lastSeen && lastSeen > activeThreshold;
                 const lastSeenText = lastSeen ? lastSeen.toLocaleString('de-DE') : 'Nie';
 
                 return `
