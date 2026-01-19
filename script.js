@@ -203,16 +203,20 @@ window.startChat = async function () {
 
     // CHECK BAN STATUS BEFORE STARTING (with fallback)
     if (authManager.currentUser) {
+        console.log('🔍 Checking ban status for:', authManager.currentUser.id);
         let isBanned = false;
         let banData = null;
 
         if (window.userManagement) {
+            console.log('✅ Using UserManagement for ban check');
             const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+            console.log('📊 Ban check result:', status);
             if (!status.allowed) {
                 isBanned = true;
                 banData = status;
             }
         } else if (authManager.supabase) {
+            console.log('⚠️ Fallback: Direct Supabase ban check');
             // Fallback direct check
             const { data } = await authManager.supabase
                 .from('user_management')
@@ -220,6 +224,7 @@ window.startChat = async function () {
                 .eq('user_id', authManager.currentUser.id)
                 .single();
 
+            console.log('📊 Direct DB result:', data);
             if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) {
                 isBanned = true;
                 banData = { reason: data.ban_reason };
@@ -227,9 +232,11 @@ window.startChat = async function () {
         }
 
         if (isBanned) {
+            console.log('🚫 User is BANNED, blocking chat start');
             showBanModal(banData || { reason: 'Gesperrt' });
             return;
         }
+        console.log('✅ User is allowed to chat');
     }
 
     try {
@@ -280,12 +287,15 @@ window.skipPartner = async function () {
 
     // STRICT BAN CHECK BEFORE SKIPPING
     if (authManager.currentUser) {
+        console.log('🔍 [SKIP] Checking ban status for:', authManager.currentUser.id);
         let isBanned = false;
         let banData = null;
 
         // Try UserManagement first
         if (window.userManagement) {
+            console.log('✅ [SKIP] Using UserManagement for ban check');
             const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+            console.log('📊 [SKIP] Ban check result:', status);
             if (!status.allowed) {
                 isBanned = true;
                 banData = status;
@@ -294,12 +304,14 @@ window.skipPartner = async function () {
 
         // Fallback to direct Supabase check if needed
         if (!isBanned && authManager.supabase) {
+            console.log('⚠️ [SKIP] Fallback: Direct Supabase ban check');
             const { data } = await authManager.supabase
                 .from('user_management')
                 .select('status, ban_reason')
                 .eq('user_id', authManager.currentUser.id)
                 .single();
 
+            console.log('📊 [SKIP] Direct DB result:', data);
             if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) {
                 isBanned = true;
                 banData = { reason: data.ban_reason };
@@ -307,13 +319,14 @@ window.skipPartner = async function () {
         }
 
         if (isBanned) {
-            console.log('🚫 User is banned, blocking skip.');
+            console.log('🚫 [SKIP] User is BANNED, blocking skip');
             showBanModal(banData || { reason: 'Gesperrt' });
             if (webrtcManager) webrtcManager.stop(); // Stop current connection
             isActive = false;
             updateUIState('idle');
             return; // STOP execution
         }
+        console.log('✅ [SKIP] User is allowed to skip');
     }
 
     // Only if allowed:

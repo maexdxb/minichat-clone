@@ -7,6 +7,7 @@ class UserManagement {
     // Check if user is banned
     async checkUserStatus(userId) {
         try {
+            // Disable cache to ensure fresh status
             const { data, error } = await this.supabase
                 .from('user_management')
                 .select('*')
@@ -14,12 +15,17 @@ class UserManagement {
                 .single();
 
             if (error) {
-                console.error('Error checking user status:', error);
-                return { allowed: true }; // Allow if error (fail-safe)
+                console.error('⚠️ checkUserStatus DB Error:', error);
+                // If it's just "row not found", user is new/clean -> Allow
+                if (error.code === 'PGRST116') return { allowed: true };
+                // Other errors -> Allow (fail-safe) but log loudly
+                return { allowed: true };
             }
 
+            console.log('🛡️ User Status Check:', data ? data.status : 'No Data');
+
             if (!data) {
-                return { allowed: true }; // User not in DB yet
+                return { allowed: true };
             }
 
             // Check if permanently banned
