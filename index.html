@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Siagechat - Video Chat v101</title>
+    <title>Siagechat - Video Chat v102</title>
 
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,14 +20,14 @@
 
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=101">
+    <link rel="stylesheet" href="style.css?v=102">
 </head>
 
 <body>
     <header class="main-header">
         <div class="logo-container">
             <i class="fa-solid fa-comment-dots logo-icon"></i>
-            <span>Siagechat <small style="font-size: 10px; opacity: 0.5;">v101</small></span>
+            <span>Siagechat <small style="font-size: 10px; opacity: 0.5;">v102</small></span>
         </div>
 
         <div class="header-right">
@@ -134,23 +134,23 @@
 
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
-        <!-- ENABLED BY DEFAULT in v101 to handle stuck loading state -->
+        <!-- ENABLED BY DEFAULT in v102 to handle stuck loading state -->
         <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()">START</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts v101 -->
-    <script src="config.js?v=101"></script>
-    <script src="auth.js?v=101"></script>
-    <script src="user-management.js?v=101"></script>
-    <script src="swipe.js?v=101"></script>
-    <script src="webrtc.js?v=101"></script>
-    <script src="script.js?v=101"></script>
-    <script src="report.js?v=101"></script>
+    <!-- Scripts v102 -->
+    <script src="config.js?v=102"></script>
+    <script src="auth.js?v=102"></script>
+    <script src="user-management.js?v=102"></script>
+    <script src="swipe.js?v=102"></script>
+    <script src="webrtc.js?v=102"></script>
+    <script src="script.js?v=102"></script>
+    <script src="report.js?v=102"></script>
 
     <script>
         function startMobileChat() {
-            console.log("📱 Mobile Start pressed v101");
+            console.log("📱 Mobile Start pressed v102");
             document.getElementById('start-overlay').style.display = 'none';
             if (window.startChat) window.startChat();
             else alert("WebRTC noch nicht bereit, bitte warten...");

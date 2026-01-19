@@ -140,14 +140,9 @@ class WebRTCManager {
                 throw new Error("WebRTC wird von diesem Browser nicht unterstützt.");
             }
 
-            // Responsive constraints: Desktop vs Mobile
-            const isMobile = window.innerWidth <= 768;
+            // Simple constraints for max compatibility
             const constraints = {
-                video: isMobile ? {
-                    facingMode: "user"
-                } : {
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
+                video: {
                     facingMode: "user"
                 },
                 audio: true
@@ -179,6 +174,7 @@ class WebRTCManager {
 
             this.localStream = stream;
             console.log('✅ Local stream started:', stream.id);
+
             return this.localStream;
 
         } catch (error) {
