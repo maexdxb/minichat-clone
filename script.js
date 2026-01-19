@@ -82,6 +82,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Race condition: Timeout after 3 seconds if server doesn't respond
         const initPromise = webrtcManager.init();
+        // Initialize globally
+        window.webrtcManager = webrtcManager;
+
         const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Connection timeout')), 3000)
         );

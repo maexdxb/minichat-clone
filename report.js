@@ -74,8 +74,23 @@ if (btnConfirmReport) {
             console.log('👤 Reporter ID:', reporterId);
 
             if (window.authManager && window.authManager.supabase) {
+                // EXTREME DEBUGGING
+                console.log('🔍 DEBUG REPORTING:');
+                console.log(' - window.webrtcManager:', window.webrtcManager);
+                if (window.webrtcManager) {
+                    console.log(' - window.webrtcManager.partnerSupabaseId:', window.webrtcManager.partnerSupabaseId);
+                }
+
+                // Try to get ID from global variable if manager property is missing (fallback)
                 const reportedUserId = (window.webrtcManager && window.webrtcManager.partnerSupabaseId) ?
                     window.webrtcManager.partnerSupabaseId : null;
+
+                if (!reportedUserId) {
+                    console.error('❌ CRITICAL: reportedUserId IS NULL! Report will be anonymous.');
+                    alert('ACHTUNG: Partner-ID konnte nicht ermittelt werden (Gast?).');
+                } else {
+                    console.log('✅ reportedUserId found:', reportedUserId);
+                }
 
                 console.log('🛡️ Sende Report an Supabase für User:', reportedUserId);
 
