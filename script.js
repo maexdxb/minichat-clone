@@ -712,19 +712,24 @@ async function performBanCheck() {
     return false; // Not banned
 }
 
-// Start Chat Function (modified to include ban check)
+// Start Chat Function (Fixed: Direct Camera Access)
 async function startChat() {
     // Check ban status first
     if (await performBanCheck()) return;
 
-    // Request permissions first
+    // Request permissions DIRECTLY (bypassing manager to ensure it works)
     try {
-        console.log('🎬 Starting chat...');
+        console.log('🎬 Starting chat (Direct API)...');
 
-        // 1. Get Local Stream via Manager
-        const stream = await webrtcManager.startLocalStream();
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: true
+        });
 
-        // 2. Show local video
+        // Show local video
         localVideo.srcObject = stream;
         localVideo.style.display = 'block';
         localOverlay.style.display = 'none';
@@ -745,8 +750,11 @@ async function startChat() {
             btnStart.style.display = 'none'; // Hide start button
         }
 
-        // 3. Find Partner
+        // Initialize WebRTC connection
         if (webrtcManager) {
+            // Set stream in manager manually
+            webrtcManager.localStream = stream;
+
             const userData = {
                 isGuest: isGuest,
                 country: selectedCountry,
