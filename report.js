@@ -9,16 +9,17 @@ const btnConfirmReport = document.getElementById('btnConfirmReport');
 
 // Open Modal logic
 window.openReportModal = function () {
-    console.log('🚩 Opening report modal...');
+    console.log('🚩 openReportModal triggered');
 
     if (!reportModal) {
-        console.error('Report modal not found in DOM');
+        console.error('❌ reportModal Element nicht gefunden!');
         return;
     }
 
     // Capture screenshot of remote video
     const remoteVideo = document.getElementById('remoteVideo');
     if (remoteVideo && remoteVideo.srcObject) {
+        console.log('📸 Versuche Screenshot zu erstellen...');
         try {
             const canvas = document.createElement('canvas');
             canvas.width = remoteVideo.videoWidth || 640;
@@ -31,19 +32,23 @@ window.openReportModal = function () {
             if (reportScreenshot) {
                 reportScreenshot.src = dataUrl;
                 reportScreenshot.style.display = 'block';
+                console.log('✅ Screenshot erstellt');
             }
         } catch (e) {
-            console.error('Error capturing screenshot:', e);
+            console.error('❌ Fehler beim Screenshot:', e);
         }
+    } else {
+        console.warn('⚠️ Kein remoteVideo oder srcObject gefunden für Screenshot');
     }
 
     reportModal.style.display = 'flex';
+    console.log('🔓 Modal sichtbar gemacht');
 }
 
 window.closeReportModal = function () {
+    console.log('🔒 Schließe Modal');
     if (reportModal) {
         reportModal.style.display = 'none';
-        // Clear screenshot to save memory
         if (reportScreenshot) {
             reportScreenshot.src = '';
             reportScreenshot.style.display = 'none';
@@ -53,26 +58,26 @@ window.closeReportModal = function () {
 
 // Setup Event Listener for Confirm Button
 if (btnConfirmReport) {
-    btnConfirmReport.addEventListener('click', async () => {
+    console.log('✅ Found btnConfirmReport, attaching listener');
+    btnConfirmReport.onclick = async () => {
+        console.log('🔘 btnConfirmReport GEKLICKT!');
         const btnText = btnConfirmReport.innerText;
         btnConfirmReport.innerText = 'Sende...';
         btnConfirmReport.disabled = true;
 
         try {
-            // Prepare Data
-            const screenshotData = reportScreenshot.src; // Base64
-            // We assume authenticated user
+            const screenshotData = reportScreenshot.src;
             let reporterId = null;
             if (window.authManager && window.authManager.currentUser) {
                 reporterId = window.authManager.currentUser.id;
             }
+            console.log('👤 Reporter ID:', reporterId);
 
-            // Send to Supabase
             if (window.authManager && window.authManager.supabase) {
                 const reportedUserId = (window.webrtcManager && window.webrtcManager.partnerSupabaseId) ?
                     window.webrtcManager.partnerSupabaseId : null;
 
-                console.log('🛡️ Submitting report for user:', reportedUserId);
+                console.log('🛡️ Sende Report an Supabase für User:', reportedUserId);
 
                 const { error } = await window.authManager.supabase
                     .from('reports')
@@ -81,48 +86,45 @@ if (btnConfirmReport) {
                         reported_user_id: reportedUserId,
                         reason: 'Unangemessenes Verhalten',
                         screenshot: screenshotData,
-                        status: 'pending' // pending, reviewed
+                        status: 'pending'
                     });
 
                 if (error) {
                     console.error('❌ Supabase Report Error:', error);
-                    showNotification('Fehler beim Senden der Meldung! ❌');
+                    alert('Fehler: ' + error.message);
                 } else {
-                    console.log('✅ Report saved to database successfully!');
+                    console.log('✅ Report erfolgreich gespeichert!');
                 }
+            } else {
+                console.error('❌ Supabase Client nicht gefunden!');
             }
         } catch (err) {
-            console.error('Report submission error:', err);
+            console.error('❌ Report submission error:', err);
         }
 
-        // Visual feedback
-        console.log('✅ Report submitted!');
         btnConfirmReport.innerText = 'Gesendet!';
         btnConfirmReport.style.backgroundColor = '#28a745';
 
         setTimeout(() => {
             closeReportModal();
-            // Reset button
             btnConfirmReport.innerText = btnText;
             btnConfirmReport.style.backgroundColor = '#dc3545';
             btnConfirmReport.disabled = false;
-
-            // Show notification
-            if (typeof showNotification === 'function') {
-                showNotification('Benutzer wurde gemeldet. Danke für deine Mithilfe!');
-            } else {
-                alert('Benutzer wurde gemeldet. Danke!');
-            }
-
+            showNotification('Benutzer wurde gemeldet.');
         }, 1000);
-    });
+    };
+} else {
+    console.error('❌ btnConfirmReport nicht im DOM gefunden!');
 }
 
-// Hook up the report button if it wasn't caught by the onclick in HTML
-// (We added onclick="openReportModal()" in HTML so this is redundant but safe)
+// Hook up the report button
 if (btnReport) {
-    btnReport.addEventListener('click', (e) => {
+    console.log('✅ Found btnReport (Overlay), attaching listener');
+    btnReport.onclick = (e) => {
+        console.log('🔘 btnReport (Overlay) GEKLICKT!');
         e.preventDefault();
         window.openReportModal();
-    });
+    };
+} else {
+    console.log('⏳ btnReport (Overlay) noch nicht da, warte...');
 }
