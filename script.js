@@ -453,7 +453,8 @@ async function skipPartner() {
             const userData = {
                 isGuest: isGuest,
                 country: selectedCountry,
-                gender: selectedGender
+                gender: selectedGender,
+                supabaseId: authManager.currentUser ? authManager.currentUser.id : null
             };
             webrtcManager.findPartner(userData);
         }
@@ -467,7 +468,8 @@ function findPartner() {
     const userData = {
         isGuest: isGuest,
         country: selectedCountry,
-        gender: selectedGender
+        gender: selectedGender,
+        supabaseId: authManager.currentUser ? authManager.currentUser.id : null
     };
 
     webrtcManager.findPartner(userData);
@@ -777,7 +779,8 @@ async function startChat() {
             const userData = {
                 isGuest: isGuest,
                 country: selectedCountry,
-                gender: selectedGender
+                gender: selectedGender,
+                supabaseId: authManager.currentUser ? authManager.currentUser.id : null
             };
             // Start searching
             webrtcManager.findPartner(userData);

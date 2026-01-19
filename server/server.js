@@ -101,8 +101,16 @@ io.on('connection', (socket) => {
             console.log(`Active connections: ${activeConnections.size / 2} pairs`);
 
             // Notify both users - socket is the initiator (creates offer)
-            socket.emit('partner-found', { partnerId: partner.id, initiator: true });
-            partner.emit('partner-found', { partnerId: socket.id, initiator: false });
+            socket.emit('partner-found', {
+                partnerId: partner.id,
+                partnerSupabaseId: partner.userData ? partner.userData.supabaseId : null,
+                initiator: true
+            });
+            partner.emit('partner-found', {
+                partnerId: socket.id,
+                partnerSupabaseId: socket.userData ? socket.userData.supabaseId : null,
+                initiator: false
+            });
 
         } else {
             // Add to waiting queue
@@ -213,8 +221,16 @@ io.on('connection', (socket) => {
 
             console.log(`🎉 Matched ${socket.id} with ${partner.id} after skip (1-to-1)`);
 
-            socket.emit('partner-found', { partnerId: partner.id, initiator: true });
-            partner.emit('partner-found', { partnerId: socket.id, initiator: false });
+            socket.emit('partner-found', {
+                partnerId: partner.id,
+                partnerSupabaseId: partner.userData ? partner.userData.supabaseId : null,
+                initiator: true
+            });
+            partner.emit('partner-found', {
+                partnerId: socket.id,
+                partnerSupabaseId: socket.userData ? socket.userData.supabaseId : null,
+                initiator: false
+            });
         } else {
             waitingQueue.push(socket);
             socket.emit('searching');

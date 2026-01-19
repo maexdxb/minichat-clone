@@ -69,10 +69,16 @@ if (btnConfirmReport) {
 
             // Send to Supabase
             if (window.authManager && window.authManager.supabase) {
+                const reportedUserId = (window.webrtcManager && window.webrtcManager.partnerSupabaseId) ?
+                    window.webrtcManager.partnerSupabaseId : null;
+
+                console.log('🛡️ Submitting report for user:', reportedUserId);
+
                 const { error } = await window.authManager.supabase
                     .from('reports')
                     .insert({
                         reporter_id: reporterId,
+                        reported_user_id: reportedUserId,
                         reason: 'Unangemessenes Verhalten',
                         screenshot: screenshotData,
                         status: 'pending' // pending, reviewed

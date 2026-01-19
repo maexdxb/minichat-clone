@@ -279,6 +279,7 @@
                     <thead>
                         <tr>
                             <th>Zeit</th>
+                            <th>Gemeldet</th>
                             <th>Grund</th>
                             <th>Beweis</th>
                             <th>Status</th>
@@ -322,6 +323,7 @@
                 <h2>Meldung prüfen</h2>
                 <div style="background: #f9f9f9; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
                     <img id="review-img" class="report-img-full" src="">
+                    <p><strong>Gemeldet:</strong> <span id="review-reported-user">-</span></p>
                     <p><strong>Von:</strong> <span id="review-reporter">-</span></p>
                     <p><strong>Grund:</strong> <span id="review-reason">-</span></p>
                     <p><strong>Zeit:</strong> <span id="review-time">-</span></p>
@@ -529,6 +531,7 @@
             tbody.innerHTML = data.map(r => `
                 <tr>
                     <td>${new Date(r.created_at).toLocaleString()}</td>
+                    <td><code style="font-size:10px">${r.reported_user_id || 'Gast'}</code></td>
                     <td>${r.reason || '-'}</td>
                     <td><img src="${r.screenshot}" class="report-img-thumb" onclick="openReviewModal('${r.id}')"></td>
                     <td><span class="status-badge status-${r.status === 'pending' ? 'perm_banned' : 'active'}">${r.status}</span></td>
@@ -542,6 +545,7 @@
             if (!r) return;
             currentReviewReportId = id;
             document.getElementById('review-img').src = r.screenshot;
+            document.getElementById('review-reported-user').textContent = r.reported_user_id || 'Gast';
             document.getElementById('review-reason').textContent = r.reason;
             document.getElementById('review-reporter').textContent = r.reporter_id || 'Anon';
             document.getElementById('review-time').textContent = new Date(r.created_at).toLocaleString();
