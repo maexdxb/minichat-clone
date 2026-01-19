@@ -111,7 +111,9 @@ function setupWebRTCCallbacks() {
     webrtcManager.onPartnerFound = (partnerId) => {
         console.log('🤝 Partner found:', partnerId);
         updateUIState('connected');
-        if (window.swipeHandler) window.swipeHandler.enable();
+        if (window.swipeHandler && typeof window.swipeHandler.enable === 'function') {
+            window.swipeHandler.enable();
+        }
     };
 
     webrtcManager.onPartnerDisconnected = () => {
