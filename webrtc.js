@@ -140,8 +140,12 @@ class WebRTCManager {
                 throw new Error("WebRTC wird von diesem Browser nicht unterstützt.");
             }
 
+            // Responsive constraints: Desktop vs Mobile
+            const isMobile = window.innerWidth <= 768;
             const constraints = {
-                video: {
+                video: isMobile ? {
+                    facingMode: "user"
+                } : {
                     width: { ideal: 1280 },
                     height: { ideal: 720 },
                     facingMode: "user"
