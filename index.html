@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=81">
+    <link rel="stylesheet" href="style.css?v=82">
 </head>
 
 <body>
@@ -36,7 +36,6 @@
 
             <!-- Auth Glass -->
             <div class="auth-buttons">
-                <!-- v81: Direct Google Login Call -->
                 <button id="btnLogin" class="btn-login liquid-glass-pink"
                     onclick="window.authManager.signInWithGoogle()">
                     <i class="fa-brands fa-google"></i> Anmelden
@@ -53,7 +52,6 @@
     </header>
 
     <main class="chat-container">
-        <!-- v81: Chat Container is Swipe Target -->
         <div class="video-grid">
             <!-- Local Video (Left) -->
             <div class="video-wrapper">
@@ -73,7 +71,7 @@
                 <video id="remoteVideo" autoplay playsinline></video>
                 <div class="video-label remote">Partner</div>
 
-                <!-- Waiting Overlay (Centered, Liquid Pink) -->
+                <!-- Waiting Overlay -->
                 <div class="remote-loader idle">
                     <div class="loader-content liquid-glass-pink">
                         <div class="spinner"></div>
@@ -81,7 +79,7 @@
                     </div>
                 </div>
 
-                <!-- Report Button (Neon Flag Only) -->
+                <!-- Report Button -->
                 <button id="btnReport" class="btn-report-overlay" title="Melden" onclick="window.openReportModal()">
                     <i class="fas fa-flag"></i>
                 </button>
@@ -149,34 +147,25 @@
 
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
-        <!-- Pulsing Button -->
-        <button class="tap-to-start-btn" onclick="startMobileChat()">START</button>
+        <!-- Disabled initially -->
+        <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()" disabled
+            style="opacity: 0.5;">LADEN...</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts v81 -->
-    <script src="config.js?v=81"></script>
-    <script src="auth.js?v=81"></script>
-    <script src="user-management.js?v=81"></script>
-    <script src="swipe.js?v=81"></script>
-    <script src="webrtc.js?v=81"></script>
-    <script src="script.js?v=81"></script>
-    <script src="report.js?v=81"></script>
+    <!-- Scripts v82 -->
+    <script src="config.js?v=82"></script>
+    <script src="auth.js?v=82"></script>
+    <script src="user-management.js?v=82"></script>
+    <script src="swipe.js?v=82"></script>
+    <script src="webrtc.js?v=82"></script>
+    <script src="script.js?v=82"></script>
+    <script src="report.js?v=82"></script>
 
     <script>
-        // Use Global Helper for Mobile Start
         function startMobileChat() {
-            console.log('📱 Mobile Start Clicked');
             document.getElementById('start-overlay').style.display = 'none';
-
-            // Wait a tiny bit for UI update
-            setTimeout(() => {
-                if (window.startChat) {
-                    window.startChat();
-                } else {
-                    alert('Ladefehler: Skript nicht bereit.');
-                }
-            }, 100);
+            if (window.startChat) window.startChat();
         }
     </script>
 </body>

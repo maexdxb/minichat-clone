@@ -93,6 +93,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         console.log('✅ WebRTC Manager initialized');
 
+        // Enable Mobile Start Button
+        const mobileBtn = document.getElementById('mobileStartBtn');
+        if (mobileBtn) {
+            mobileBtn.disabled = false;
+            mobileBtn.textContent = "START";
+            mobileBtn.style.opacity = "1";
+            mobileBtn.removeAttribute('style'); // Reset inline opacity
+        }
+
         // Setup WebRTC callbacks
         setupWebRTCCallbacks();
 
