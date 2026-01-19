@@ -69,22 +69,22 @@ class UserManagement {
     }
 
     // Ban user temporarily
-    async banUserTemporary(userId, hours, reason, adminId) {
+    async banUserTemporary(userId, hours, reason, adminId, evidence = null) {
         const banUntil = new Date();
         banUntil.setHours(banUntil.getHours() + hours);
 
         const { error } = await this.supabase
             .from('user_management')
-            .update({
+            .upsert({
+                user_id: userId,
                 status: 'temp_banned',
                 ban_reason: reason,
                 ban_until: banUntil.toISOString(),
-                ban_evidence: arguments.length > 4 ? arguments[4] : null, // Support for evidence
+                ban_evidence: evidence,
                 banned_at: new Date().toISOString(),
                 banned_by: adminId,
                 updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId);
+            }, { onConflict: 'user_id' });
 
         if (error) {
             console.error('Error banning user:', error);
@@ -95,19 +95,19 @@ class UserManagement {
     }
 
     // Ban user permanently
-    async banUserPermanent(userId, reason, adminId) {
+    async banUserPermanent(userId, reason, adminId, evidence = null) {
         const { error } = await this.supabase
             .from('user_management')
-            .update({
+            .upsert({
+                user_id: userId,
                 status: 'perm_banned',
                 ban_reason: reason,
                 ban_until: null,
-                ban_evidence: arguments.length > 3 ? arguments[3] : null, // Support for evidence
+                ban_evidence: evidence,
                 banned_at: new Date().toISOString(),
                 banned_by: adminId,
                 updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId);
+            }, { onConflict: 'user_id' });
 
         if (error) {
             console.error('Error banning user:', error);

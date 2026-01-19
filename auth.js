@@ -131,17 +131,31 @@ class AuthManager {
     startHeartbeat() {
         if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
 
-        // Disabled active polling until profiles table is fixed
-        /*
+        // Immediate update on login
         this.updateLastSeen();
+
+        // Every 30 seconds
         this.heartbeatInterval = setInterval(() => {
             this.updateLastSeen();
-        }, 30000); 
-        */
+        }, 30000);
     }
 
     async updateLastSeen() {
-        /* Heartbeat disabled */
+        if (!this.currentUser) return;
+
+        try {
+            await this.supabase
+                .from('user_management')
+                .upsert({
+                    user_id: this.currentUser.id,
+                    email: this.currentUser.email,
+                    display_name: this.currentUser.user_metadata.full_name || this.currentUser.email.split('@')[0],
+                    last_seen: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }, { onConflict: 'user_id', ignoreDuplicates: false });
+        } catch (error) {
+            console.error('Failed to update last seen:', error);
+        }
     }
 }
 
