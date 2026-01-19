@@ -21,6 +21,11 @@ class SwipeHandler {
         this.element.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: true });
     }
 
+    enable() {
+        console.log('📱 SwipeHandler enabled');
+        // Already initialized via constructor, this is for API compatibility
+    }
+
     handleTouchStart(e) {
         const touch = e.changedTouches[0];
         this.startX = touch.pageX;
