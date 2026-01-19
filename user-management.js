@@ -27,7 +27,8 @@ class UserManagement {
                 return {
                     allowed: false,
                     reason: data.ban_reason || 'Dein Account wurde permanent gesperrt.',
-                    type: 'permanent'
+                    type: 'permanent',
+                    evidence: data.ban_evidence
                 };
             }
 
@@ -43,7 +44,8 @@ class UserManagement {
                         reason: data.ban_reason || 'Dein Account wurde temporär gesperrt.',
                         type: 'temporary',
                         until: banUntil,
-                        hoursLeft: hoursLeft
+                        hoursLeft: hoursLeft,
+                        evidence: data.ban_evidence // Send evidence to client
                     };
                 } else {
                     // Ban expired, unban user
@@ -71,6 +73,7 @@ class UserManagement {
                 status: 'temp_banned',
                 ban_reason: reason,
                 ban_until: banUntil.toISOString(),
+                ban_evidence: arguments.length > 4 ? arguments[4] : null, // Support for evidence
                 banned_at: new Date().toISOString(),
                 banned_by: adminId,
                 updated_at: new Date().toISOString()
@@ -93,6 +96,7 @@ class UserManagement {
                 status: 'perm_banned',
                 ban_reason: reason,
                 ban_until: null,
+                ban_evidence: arguments.length > 3 ? arguments[3] : null, // Support for evidence
                 banned_at: new Date().toISOString(),
                 banned_by: adminId,
                 updated_at: new Date().toISOString()
@@ -115,6 +119,7 @@ class UserManagement {
                 status: 'active',
                 ban_reason: null,
                 ban_until: null,
+                ban_evidence: null,
                 updated_at: new Date().toISOString()
             })
             .eq('user_id', userId);

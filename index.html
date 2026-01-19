@@ -150,6 +150,34 @@
         </div>
     </div>
 
+    <!-- Ban Modal -->
+    <div id="banModal" class="modal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="font-size: 50px; color: #dc3545; margin-bottom: 15px;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h2 style="color: #dc3545; margin-top: 0;">ACCOUNT GESPERRT</h2>
+
+            <div id="ban-info"
+                style="text-align: left; background: #fff5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #fed7d7;">
+                <p><strong>Grund:</strong> <span id="ban-reason-text">-</span></p>
+                <p id="ban-duration-row"><strong>Dauer:</strong> <span id="ban-duration-text">-</span></p>
+            </div>
+
+            <div id="ban-evidence-container" style="display: none; margin-bottom: 20px;">
+                <p style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">BEWEIS DER MELDUNG:</p>
+                <img id="ban-evidence-img" src=""
+                    style="width: 100%; border-radius: 8px; border: 2px solid #dc3545; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            </div>
+
+            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Falls du Fragen zu deiner Sperrung hast, wende
+                dich bitte an den Support.</p>
+
+            <button class="btn-start" onclick="location.reload()" style="width: 100%; background: #666;">Seite neu
+                laden</button>
+        </div>
+    </div>
+
     <!-- Report Modal -->
     <div id="reportModal" class="modal" style="align-items: flex-start; padding-top: 50px;">
         <div class="modal-content report-content" style="max-height: 85vh; overflow-y: auto;">
@@ -175,13 +203,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="config.js?v=60"></script>
-    <script src="auth.js?v=60"></script>
-    <script src="user-management.js?v=60"></script>
-    <script src="swipe.js?v=60"></script>
-    <script src="webrtc.js?v=60"></script>
-    <script src="script.js?v=60"></script>
-    <script src="report.js?v=60"></script>
+    <script src="config.js?v=61"></script>
+    <script src="auth.js?v=61"></script>
+    <script src="user-management.js?v=61"></script>
+    <script src="swipe.js?v=61"></script>
+    <script src="webrtc.js?v=61"></script>
+    <script src="script.js?v=61"></script>
+    <script src="report.js?v=61"></script>
 </body>
 
 </html>

@@ -328,10 +328,17 @@
                     <p><strong>Grund:</strong> <span id="review-reason">-</span></p>
                     <p><strong>Zeit:</strong> <span id="review-time">-</span></p>
                 </div>
-                <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                    <button class="btn btn-secondary"
-                        onclick="document.getElementById('review-modal').style.display='none'">Schließen</button>
-                    <button class="btn btn-unban" onclick="markReportReviewed()">Geprüft ✔</button>
+                <div
+                    style="display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <div>
+                        <button class="btn btn-ban-temp" id="btn-review-ban-temp">Temp Ban</button>
+                        <button class="btn btn-ban-perm" id="btn-review-ban-perm">Perm Ban</button>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary"
+                            onclick="document.getElementById('review-modal').style.display='none'">Schließen</button>
+                        <button class="btn btn-unban" onclick="markReportReviewed()">Geprüft ✔</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -587,6 +594,54 @@
             document.getElementById('review-time').textContent = new Date(r.created_at).toLocaleString();
             document.getElementById('review-reason').textContent = r.reason;
             document.getElementById('review-modal').style.display = 'flex';
+
+            // Setup Ban Buttons for this specific report
+            const btnTemp = document.getElementById('btn-review-ban-temp');
+            const btnPerm = document.getElementById('btn-review-ban-perm');
+
+            btnTemp.onclick = () => {
+                if (!r.reported_user_id) return alert('Cannot ban a guest/unknown user');
+                openBanModalFromReport(r.reported_user_id, 'temp', r.screenshot);
+            };
+
+            btnPerm.onclick = () => {
+                if (!r.reported_user_id) return alert('Cannot ban a guest/unknown user');
+                openBanModalFromReport(r.reported_user_id, 'perm', r.screenshot);
+            };
+        }
+
+        // New function to handle banning with evidence
+        let currentEvidence = null;
+        window.openBanModalFromReport = function (userId, type, screenshot) {
+            currentUserId = userId;
+            currentEvidence = screenshot;
+            document.getElementById('ban-type').value = type;
+            document.getElementById('hours-group').style.display = type === 'temp' ? 'block' : 'none';
+            document.getElementById('ban-reason').value = 'Verstoß gegen Nutzungsbedingungen (siehe Beweis)';
+            document.getElementById('ban-modal').style.display = 'flex';
+
+            // Override confirmBan to include evidence
+            window.confirmBan = async function () {
+                const type = document.getElementById('ban-type').value;
+                const hours = parseInt(document.getElementById('ban-hours').value);
+                const reason = document.getElementById('ban-reason').value;
+
+                if (!reason) return alert('Grund fehlt!');
+
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                let res;
+                if (type === 'temp') res = await userManagement.banUserTemporary(currentUserId, hours, reason, session.user.id, currentEvidence);
+                else res = await userManagement.banUserPermanent(currentUserId, reason, session.user.id, currentEvidence);
+
+                if (res.success) {
+                    closeModal();
+                    loadUsers();
+                    document.getElementById('review-modal').style.display = 'none';
+                    markReportReviewed();
+                    alert('Nutzer erfolgreich gesperrt!');
+                }
+                else alert('Error: ' + res.error.message);
+            }
         }
 
         window.markReportReviewed = async function () {

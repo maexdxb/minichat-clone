@@ -731,8 +731,37 @@ async function performBanCheck() {
 
         if (!status.allowed) {
             console.warn('User is banned:', status.reason);
-            // Show ban message
-            alert(`⛔️ DU BIST GESPERRT!\n\nGrund: ${status.reason}\n${status.hoursLeft ? 'Dauer: noch ' + status.hoursLeft + ' Stunden' : ''}`);
+
+            // Show custom Ban Modal
+            const banModal = document.getElementById('banModal');
+            const reasonText = document.getElementById('ban-reason-text');
+            const durationRow = document.getElementById('ban-duration-row');
+            const durationText = document.getElementById('ban-duration-text');
+            const evidenceContainer = document.getElementById('ban-evidence-container');
+            const evidenceImg = document.getElementById('ban-evidence-img');
+
+            if (banModal) {
+                reasonText.textContent = status.reason;
+
+                if (status.type === 'temporary') {
+                    durationRow.style.display = 'block';
+                    durationText.textContent = `noch ${status.hoursLeft} Stunden`;
+                } else {
+                    durationRow.style.display = 'none';
+                }
+
+                if (status.evidence) {
+                    evidenceImg.src = status.evidence;
+                    evidenceContainer.style.display = 'block';
+                } else {
+                    evidenceContainer.style.display = 'none';
+                }
+
+                banModal.style.display = 'flex';
+            } else {
+                // Fallback to alert if modal not found
+                alert(`⛔️ DU BIST GESPERRT!\n\nGrund: ${status.reason}\n${status.hoursLeft ? 'Dauer: noch ' + status.hoursLeft + ' Stunden' : ''}`);
+            }
 
             // Ensure UI is reset
             if (isActive) stopChat();
