@@ -165,8 +165,6 @@ video {
     height: 100%;
     /* Mobile & Desktop: Cover (Immersive) */
     object-fit: cover;
-    object-position: center bottom;
-    /* Focus on bottom to avoid ceiling view */
     background: #000;
 }
 
