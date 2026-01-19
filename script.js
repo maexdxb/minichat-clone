@@ -688,27 +688,45 @@ function toggleReportButton(show) {
         btn.style.display = show ? 'flex' : 'none';
     }
 }
-// Ban Check Helper
+// Ban Check Helper (Safe Version)
 async function performBanCheck() {
-    if (!userManagement || !authManager.currentUser) return false;
+    console.log('🛡️ Checking ban status...');
+    if (!userManagement || !authManager.currentUser) {
+        console.log('ℹ️ No user/manager, skipping ban check');
+        return false;
+    }
 
     // Check button state to prevent double clicks while checking
     const btnText = btnStart ? btnStart.innerText : '';
     if (btnStart) btnStart.disabled = true;
 
-    const status = await userManagement.checkUserStatus(authManager.currentUser.id);
+    try {
+        // Race condition: Timeout after 2 seconds
+        const checkPromise = userManagement.checkUserStatus(authManager.currentUser.id);
+        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ allowed: true, timeout: true }), 2000));
 
-    if (btnStart) btnStart.disabled = false;
+        const status = await Promise.race([checkPromise, timeoutPromise]);
 
-    if (!status.allowed) {
-        console.warn('User is banned:', status.reason);
-        // Show ban message
-        alert(`⛔️ DU BIST GESPERRT!\n\nGrund: ${status.reason}\n${status.hoursLeft ? 'Dauer: noch ' + status.hoursLeft + ' Stunden' : ''}`);
+        if (status.timeout) {
+            console.warn('⚠️ Ban check timed out - allowing access');
+        }
 
-        // Ensure UI is reset
-        if (isActive) stopChat();
-        return true; // Is banned
+        if (btnStart) btnStart.disabled = false;
+
+        if (!status.allowed) {
+            console.warn('User is banned:', status.reason);
+            // Show ban message
+            alert(`⛔️ DU BIST GESPERRT!\n\nGrund: ${status.reason}\n${status.hoursLeft ? 'Dauer: noch ' + status.hoursLeft + ' Stunden' : ''}`);
+
+            // Ensure UI is reset
+            if (isActive) stopChat();
+            return true; // Is banned
+        }
+    } catch (e) {
+        console.error('Error in ban check:', e);
+        if (btnStart) btnStart.disabled = false;
     }
+
     return false; // Not banned
 }
 
