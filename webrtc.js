@@ -8,7 +8,6 @@ class WebRTCManager {
         this.remoteStream = null;
         this.isConnected = false;
         this.isSearching = false;
-        this.partnerSupabaseId = null; // Store partner's Supabase ID
 
         // ICE servers (STUN + TURN for NAT traversal)
         this.iceServers = {
@@ -103,21 +102,8 @@ class WebRTCManager {
                 console.log('⏳ Waiting for offer from partner');
             }
 
-            // Store partner's Supabase ID
-            this.partnerSupabaseId = data.partnerSupabaseId;
-            console.log('👤 Partner Supabase ID:', this.partnerSupabaseId);
-
-            // Debug Notification
-            if (this.partnerSupabaseId) {
-                console.log('✅ Partner identified:', this.partnerSupabaseId);
-            } else {
-                console.error('❌ Partner ID MISSING! Server version check required.');
-                // Show warning to user (dev mode)
-                alert('DEBUG: Partner ID fehlt! Bitte Render Server neu deployen.');
-            }
-
             if (this.onPartnerFound) {
-                this.onPartnerFound(data.partnerId, data.partnerSupabaseId);
+                this.onPartnerFound(data.partnerId);
             }
         });
 
@@ -357,7 +343,6 @@ class WebRTCManager {
 
         this.isConnected = false;
         this.isSearching = false;
-        this.partnerSupabaseId = null;
     }
 
     // Close peer connection
