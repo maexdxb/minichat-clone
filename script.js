@@ -373,9 +373,12 @@ function updateUIState(state) {
     }
 }
 
-function performBanCheck() {
+async function performBanCheck() {
     if (window.userManagement && authManager.currentUser) {
-        userManagement.checkUserStatus(authManager.currentUser.id);
+        const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+        if (!status.allowed) {
+            showBanModal(status);
+        }
     }
 }
 

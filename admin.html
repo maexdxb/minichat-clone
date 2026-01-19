@@ -448,8 +448,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="config.js?v=100"></script>
-    <script src="user-management.js?v=100"></script>
+    <script src="config.js?v=101"></script>
+    <script src="user-management.js?v=101"></script>
     <script>
         // Global variables
         let userManagement;
@@ -592,21 +592,7 @@
             currentUserId = null;
         }
 
-        window.confirmBan = async function () {
-            const type = document.getElementById('ban-type').value;
-            const hours = parseInt(document.getElementById('ban-hours').value);
-            const reason = document.getElementById('ban-reason').value;
 
-            if (!reason) return alert('Grund fehlt!');
-
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            let res;
-            if (type === 'temp') res = await userManagement.banUserTemporary(currentUserId, hours, reason, session.user.id);
-            else res = await userManagement.banUserPermanent(currentUserId, reason, session.user.id);
-
-            if (res.success) { closeModal(); loadUsers(); }
-            else alert('Error: ' + res.error.message);
-        }
 
         window.unbanUser = async function (userId) {
             if (!confirm('Entsperren?')) return;
