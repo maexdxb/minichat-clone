@@ -7,17 +7,20 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Siagechat - Video Chat</title>
 
-    <!-- FONTS FIRST -->
+    <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Satisfy&display=swap"
         rel="stylesheet">
 
+    <!-- LIBRARIES -->
     <script src="https://kit.fontawesome.com/004068565b.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script> <!-- Preload Socket.io -->
+
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=82">
+    <link rel="stylesheet" href="style.css?v=83">
 </head>
 
 <body>
@@ -28,13 +31,11 @@
         </div>
 
         <div class="header-right">
-            <!-- Online Count Glass -->
             <div class="online-counter liquid-glass-pink">
                 <div class="pulse-dot"></div>
                 <span id="onlineCount">0</span> online
             </div>
 
-            <!-- Auth Glass -->
             <div class="auth-buttons">
                 <button id="btnLogin" class="btn-login liquid-glass-pink"
                     onclick="window.authManager.signInWithGoogle()">
@@ -53,11 +54,9 @@
 
     <main class="chat-container">
         <div class="video-grid">
-            <!-- Local Video (Left) -->
             <div class="video-wrapper">
                 <video id="localVideo" autoplay muted playsinline></video>
                 <div class="video-label local">Du</div>
-
                 <div class="local-overlay">
                     <div class="overlay-content">
                         <i class="fa-solid fa-video-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
@@ -66,12 +65,9 @@
                 </div>
             </div>
 
-            <!-- Remote Video (Right) -->
             <div class="video-wrapper">
                 <video id="remoteVideo" autoplay playsinline></video>
                 <div class="video-label remote">Partner</div>
-
-                <!-- Waiting Overlay -->
                 <div class="remote-loader idle">
                     <div class="loader-content liquid-glass-pink">
                         <div class="spinner"></div>
@@ -79,7 +75,6 @@
                     </div>
                 </div>
 
-                <!-- Report Button -->
                 <button id="btnReport" class="btn-report-overlay" title="Melden" onclick="window.openReportModal()">
                     <i class="fas fa-flag"></i>
                 </button>
@@ -112,7 +107,7 @@
         </div>
     </footer>
 
-    <!-- Report Modal -->
+    <!-- Modals (Report/Ban) -->
     <div id="reportModal" class="modal">
         <div class="modal-content liquid-glass-pink" style="border: 2px solid #fff; width: 400px; background: #000;">
             <span class="close-report-modal" onclick="closeReportModal()"
@@ -131,7 +126,6 @@
         </div>
     </div>
 
-    <!-- Ban Modal -->
     <div id="banModal" class="modal">
         <div class="modal-content liquid-glass-pink" style="border: 2px solid red;">
             <h2 style="color: red;">ACCOUNT GESPERRT</h2>
@@ -147,20 +141,20 @@
 
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
-        <!-- Disabled initially -->
+        <!-- Disabled initially, enabled by JS -->
         <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()" disabled
             style="opacity: 0.5;">LADEN...</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts v82 -->
-    <script src="config.js?v=82"></script>
-    <script src="auth.js?v=82"></script>
-    <script src="user-management.js?v=82"></script>
-    <script src="swipe.js?v=82"></script>
-    <script src="webrtc.js?v=82"></script>
-    <script src="script.js?v=82"></script>
-    <script src="report.js?v=82"></script>
+    <!-- Scripts v83 -->
+    <script src="config.js?v=83"></script>
+    <script src="auth.js?v=83"></script>
+    <script src="user-management.js?v=83"></script>
+    <script src="swipe.js?v=83"></script>
+    <script src="webrtc.js?v=83"></script>
+    <script src="script.js?v=83"></script>
+    <script src="report.js?v=83"></script>
 
     <script>
         function startMobileChat() {

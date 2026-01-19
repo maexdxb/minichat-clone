@@ -79,11 +79,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize WebRTC Manager (with timeout)
     try {
         webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
+        window.webrtcManager = webrtcManager; // Global Access
+
+        // SAFETY NET: Force enable button after 3s if init hangs
+        setTimeout(() => {
+            const mBtn = document.getElementById('mobileStartBtn');
+            if (mBtn && mBtn.disabled) {
+                console.warn('⚠️ Init took too long, force enabling button');
+                mBtn.disabled = false;
+                mBtn.textContent = "START";
+                mBtn.style.opacity = "1";
+            }
+        }, 3000);
 
         // Race condition: Timeout after 3 seconds if server doesn't respond
         const initPromise = webrtcManager.init();
-        // Initialize globally
-        window.webrtcManager = webrtcManager;
 
         const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Connection timeout')), 3000)
