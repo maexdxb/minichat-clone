@@ -720,10 +720,6 @@ async function performBanCheck() {
         return false;
     }
 
-    // Check button state to prevent double clicks while checking
-    const btnText = btnStart ? btnStart.innerText : '';
-    if (btnStart) btnStart.disabled = true;
-
     try {
         // Race condition: Timeout after 2 seconds
         const checkPromise = userManagement.checkUserStatus(authManager.currentUser.id);
@@ -734,8 +730,6 @@ async function performBanCheck() {
         if (status.timeout) {
             console.warn('⚠️ Ban check timed out - allowing access');
         }
-
-        if (btnStart) btnStart.disabled = false;
 
         if (!status.allowed) {
             console.warn('User is banned:', status.reason);
@@ -748,7 +742,6 @@ async function performBanCheck() {
         }
     } catch (e) {
         console.error('Error in ban check:', e);
-        if (btnStart) btnStart.disabled = false;
     }
 
     return false; // Not banned
