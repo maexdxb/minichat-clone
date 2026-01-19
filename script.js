@@ -708,12 +708,15 @@ async function startChat() {
 
     // Request permissions first
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        console.log('🎬 Starting chat...');
 
-        // Show local video
+        // 1. Get Local Stream via Manager
+        const stream = await webrtcManager.startLocalStream();
+
+        // 2. Show local video
         localVideo.srcObject = stream;
         localVideo.style.display = 'block';
-        localOverlay.style.display = 'none'; // Hide overlay when video is active
+        localOverlay.style.display = 'none';
 
         isActive = true;
 
@@ -731,14 +734,15 @@ async function startChat() {
             btnStart.style.display = 'none'; // Hide start button
         }
 
-        // Initialize WebRTC connection
+        // 3. Find Partner
         if (webrtcManager) {
             const userData = {
                 isGuest: isGuest,
                 country: selectedCountry,
                 gender: selectedGender
             };
-            await webrtcManager.start(stream, userData);
+            // Start searching
+            webrtcManager.findPartner(userData);
         }
 
         // Show Remote Loader (Waiting for partner)
@@ -760,7 +764,7 @@ async function startChat() {
 
     } catch (error) {
         console.error('Error accessing media devices:', error);
-        alert('Fehler: Könnte nicht auf Kamera/Mikrofon zugreifen. Bitte Berechtigungen prüfen.');
+        alert('Fehler: Könnte nicht auf Kamera/Mikrofon zugreifen: ' + error.message);
         isActive = false;
     }
 }
