@@ -513,7 +513,12 @@
                 // Heartbeat
                 setInterval(async () => {
                     if (session?.user) {
-                        await supabaseClient.from('user_management').update({ last_seen: new Date().toISOString() }).eq('user_id', session.user.id);
+                        await supabaseClient.from('user_management').upsert({
+                            user_id: session.user.id,
+                            email: session.user.email,
+                            last_seen: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_id' });
                     }
                 }, 30000);
 
