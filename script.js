@@ -201,12 +201,33 @@ window.startChat = async function () {
         return;
     }
 
-    // CHECK BAN STATUS BEFORE STARTING
-    if (window.userManagement && authManager.currentUser) {
-        const banStatus = await window.userManagement.checkUserStatus(authManager.currentUser.id);
-        if (!banStatus.allowed) {
-            // User is banned - show ban modal
-            showBanModal(banStatus);
+    // CHECK BAN STATUS BEFORE STARTING (with fallback)
+    if (authManager.currentUser) {
+        let isBanned = false;
+        let banData = null;
+
+        if (window.userManagement) {
+            const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+            if (!status.allowed) {
+                isBanned = true;
+                banData = status;
+            }
+        } else if (authManager.supabase) {
+            // Fallback direct check
+            const { data } = await authManager.supabase
+                .from('user_management')
+                .select('status, ban_reason')
+                .eq('user_id', authManager.currentUser.id)
+                .single();
+
+            if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) {
+                isBanned = true;
+                banData = { reason: data.ban_reason };
+            }
+        }
+
+        if (isBanned) {
+            showBanModal(banData || { reason: 'Gesperrt' });
             return;
         }
     }
