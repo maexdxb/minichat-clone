@@ -165,7 +165,8 @@ video {
     height: 100%;
     /* Mobile & Desktop: Cover (Immersive, crop allowed per user request) */
     object-fit: cover;
-    object-position: center;
+    object-position: center 20%;
+    /* Slight offset from top to center face */
     background: #000;
 }
 
