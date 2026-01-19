@@ -132,9 +132,6 @@ body {
     position: relative;
     background: #000;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     border: 1px solid #111;
 }
 
@@ -161,19 +158,13 @@ body {
 }
 
 video {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     background: #000;
 }
 
-/* Local video: Removed mirror effect so text in camera is readable */
-#localVideo {
-    /* transform: scaleX(-1); */
-}
+
 
 .video-label {
     position: absolute;
