@@ -375,20 +375,16 @@ function stopChat() {
         searchText.textContent = 'Klicke auf Weiter für die nächste Person';
     }
 
-    // Show Start Button again
-    if (btnStart) {
-        btnStart.style.display = 'flex';
-        btnStart.disabled = false;
-    }
-
-    // Disable control buttons
+    // Disable Stop button
     stopButtons.forEach(btn => {
         btn.disabled = true;
         btn.style.opacity = '0.5';
     });
+
+    // Keep Next button enabled so user can restart
     nextButtons.forEach(btn => {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
+        btn.disabled = false;
+        btn.style.opacity = '1';
     });
 
     // Show settings again on mobile
@@ -775,10 +771,6 @@ async function startChat() {
             btn.disabled = false;
             btn.style.opacity = '1';
         });
-
-        if (btnStart) {
-            btnStart.style.display = 'none'; // Hide start button
-        }
 
         // 3. Find Partner
         if (webrtcManager) {
