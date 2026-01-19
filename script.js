@@ -11,6 +11,7 @@ let stopButtons = [];
 let nextButtons = [];
 let btnGuest;
 let btnStart;
+let btnNext; // Single next button reference
 let localVideo, remoteVideo, localOverlay, remoteLoader, noPartner;
 let chatInput, chatMessages, btnSend;
 let countryModal, genderModal, countryBtn, genderBtn, onlineCount;
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     stopButtons = document.querySelectorAll('.btn-stop, #btnStop');
     nextButtons = document.querySelectorAll('.btn-next, #btnNext');
     btnStart = document.querySelector('.btn-start, #btnStart'); // Try both class and ID
+    btnNext = document.querySelector('.btn-next, #btnNext'); // Single next button
     btnGuest = document.querySelector('.btn-guest');
     localVideo = document.getElementById('localVideo');
     remoteVideo = document.getElementById('remoteVideo');
