@@ -14,7 +14,7 @@ app.use(cors({
     methods: ['GET', 'POST']
 }));
 
-// Serve static files from parent directory (frontend)
+// 1. Serve static files from parent directory (frontend)
 app.use(express.static(path.join(__dirname, '..')));
 
 const io = socketIO(server, {
@@ -31,7 +31,7 @@ let activeConnections = new Map();
 // Online users count
 let onlineUsers = 0;
 
-app.get('/', (req, res) => {
+app.get('/api-status', (req, res) => {
     res.json({
         status: 'online',
         service: 'Siagechat Signaling Server',
