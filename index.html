@@ -3,14 +3,21 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Siagechat - Video Chat</title>
+
+    <!-- FONTS FIRST -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Satisfy&display=swap"
+        rel="stylesheet">
+
     <script src="https://kit.fontawesome.com/004068565b.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=76">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=81">
 </head>
 
 <body>
@@ -29,7 +36,7 @@
 
             <!-- Auth Glass -->
             <div class="auth-buttons">
-                <!-- FIX: signInWithGoogle() -->
+                <!-- v81: Direct Google Login Call -->
                 <button id="btnLogin" class="btn-login liquid-glass-pink"
                     onclick="window.authManager.signInWithGoogle()">
                     <i class="fa-brands fa-google"></i> Anmelden
@@ -46,13 +53,13 @@
     </header>
 
     <main class="chat-container">
+        <!-- v81: Chat Container is Swipe Target -->
         <div class="video-grid">
             <!-- Local Video (Left) -->
             <div class="video-wrapper">
                 <video id="localVideo" autoplay muted playsinline></video>
                 <div class="video-label local">Du</div>
 
-                <!-- Mute Overlay (Centered) -->
                 <div class="local-overlay">
                     <div class="overlay-content">
                         <i class="fa-solid fa-video-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
@@ -74,7 +81,7 @@
                     </div>
                 </div>
 
-                <!-- Report Button (White & Visible) -->
+                <!-- Report Button (Neon Flag Only) -->
                 <button id="btnReport" class="btn-report-overlay" title="Melden" onclick="window.openReportModal()">
                     <i class="fas fa-flag"></i>
                 </button>
@@ -95,12 +102,13 @@
         </div>
 
         <div class="disclaimer-text">
-            <span>Regeln akzeptieren mit "Weiter".</span>
+            <span>Regeln akzeptieren mit "Weiter".</span><br>
+            <span>Verstöße führen zur Sperrung.</span>
         </div>
     </section>
 
     <footer class="chat-footer">
-        <div class="chat-input-container liquid-glass-pink" style="border-radius: 12px; padding: 0 15px;">
+        <div class="chat-input-container liquid-glass-pink" style="border-radius: 25px;">
             <input type="text" placeholder="Schreibe eine Nachricht..." class="chat-input" id="chatInput">
             <button class="send-btn" id="btnSend"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
@@ -108,10 +116,10 @@
 
     <!-- Report Modal -->
     <div id="reportModal" class="modal">
-        <div class="modal-content liquid-glass-pink" style="border: 2px solid #fff; width: 400px;">
+        <div class="modal-content liquid-glass-pink" style="border: 2px solid #fff; width: 400px; background: #000;">
             <span class="close-report-modal" onclick="closeReportModal()"
-                style="color: #fff; cursor:pointer;">&times;</span>
-            <h2 style="color: #ff3333;"><i class="fas fa-exclamation-triangle"></i> Melden</h2>
+                style="color: #fff; cursor:pointer; float:right; font-size: 1.5rem;">&times;</span>
+            <h2 style="color: #ff3333; margin-top: 10px;"><i class="fas fa-exclamation-triangle"></i> Melden</h2>
 
             <div style="margin: 20px 0;">
                 <img id="reportScreenshot" src="" style="max-width: 100%; border-radius: 8px;">
@@ -141,24 +149,34 @@
 
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
+        <!-- Pulsing Button -->
         <button class="tap-to-start-btn" onclick="startMobileChat()">START</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts -->
-    <script src="config.js?v=80"></script>
-    <script src="auth.js?v=80"></script>
-    <script src="user-management.js?v=80"></script>
-    <script src="swipe.js?v=80"></script>
-    <script src="webrtc.js?v=80"></script>
-    <script src="script.js?v=80"></script>
-    <script src="report.js?v=80"></script>
+    <!-- Scripts v81 -->
+    <script src="config.js?v=81"></script>
+    <script src="auth.js?v=81"></script>
+    <script src="user-management.js?v=81"></script>
+    <script src="swipe.js?v=81"></script>
+    <script src="webrtc.js?v=81"></script>
+    <script src="script.js?v=81"></script>
+    <script src="report.js?v=81"></script>
 
     <script>
+        // Use Global Helper for Mobile Start
         function startMobileChat() {
+            console.log('📱 Mobile Start Clicked');
             document.getElementById('start-overlay').style.display = 'none';
-            // Trigger startChat from script.js
-            if (window.startChat) window.startChat();
+
+            // Wait a tiny bit for UI update
+            setTimeout(() => {
+                if (window.startChat) {
+                    window.startChat();
+                } else {
+                    alert('Ladefehler: Skript nicht bereit.');
+                }
+            }, 100);
         }
     </script>
 </body>
