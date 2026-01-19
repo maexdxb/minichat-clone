@@ -14,13 +14,11 @@ class AuthManager {
 
             if (typeof SUPABASE_CONFIG === 'undefined' || !SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
                 console.error('❌ Supabase config missing');
-                alert('Konfigurationsfehler: Supabase URL/Key fehlt.');
                 return;
             }
 
             if (typeof supabase === 'undefined') {
                 console.error('❌ Supabase SDK not loaded');
-                alert('Systemfehler: Supabase SDK fehlt.');
                 return;
             }
 
@@ -33,7 +31,7 @@ class AuthManager {
                 console.log('✅ User logged in:', session.user.email);
                 this.currentUser = session.user;
                 this.updateUIForLoggedInUser();
-                this.startHeartbeat(); // Start tracking presence
+                this.startHeartbeat();
             } else {
                 console.log('ℹ️ No active session');
             }
@@ -124,36 +122,20 @@ class AuthManager {
         if (userMenu) userMenu.style.display = 'none';
     }
 
-    // Heartbeat: Update 'last_seen' in DB every 30s
     startHeartbeat() {
         if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
 
-        // Immediate update
+        // Disabled active polling until profiles table is fixed
+        /*
         this.updateLastSeen();
-
         this.heartbeatInterval = setInterval(() => {
             this.updateLastSeen();
-        }, 30000);
+        }, 30000); 
+        */
     }
 
     async updateLastSeen() {
-        if (!this.currentUser || !this.supabase) return;
-
-        try {
-            // Upsert profile or update timestamp
-            const { error } = await this.supabase
-                .from('profiles')
-                .update({ last_seen: new Date().toISOString() })
-                .eq('id', this.currentUser.id);
-
-            // If update fails (e.g. strict RLS), try upserting basics? 
-            // Usually update is enough if profile exists.
-            if (error) console.warn('Heartbeat silent fail:', error.message);
-            else console.log('💓 Heartbeat sent');
-
-        } catch (error) {
-            console.warn('Heartbeat error', error);
-        }
+        /* Heartbeat disabled */
     }
 }
 

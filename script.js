@@ -255,11 +255,8 @@ function setupEventListeners() {
         btn.style.opacity = '1';
     });
 
-    countryBtn.addEventListener('click', () => openModal('country'));
-    genderBtn.addEventListener('click', () => openModal('gender'));
-
-    // Guest login button
-    if (btnGuest) {
+    // Guest login (legacy check)
+    if (typeof btnGuest !== 'undefined' && btnGuest) {
         btnGuest.addEventListener('click', () => continueAsGuest());
     }
 

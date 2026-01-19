@@ -16,11 +16,11 @@
     <!-- LIBRARIES -->
     <script src="https://kit.fontawesome.com/004068565b.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script> <!-- Preload Socket.io -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=83">
+    <link rel="stylesheet" href="style.css?v=84">
 </head>
 
 <body>
@@ -100,14 +100,7 @@
         </div>
     </section>
 
-    <footer class="chat-footer">
-        <div class="chat-input-container liquid-glass-pink" style="border-radius: 25px;">
-            <input type="text" placeholder="Schreibe eine Nachricht..." class="chat-input" id="chatInput">
-            <button class="send-btn" id="btnSend"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </footer>
-
-    <!-- Modals (Report/Ban) -->
+    <!-- Modals -->
     <div id="reportModal" class="modal">
         <div class="modal-content liquid-glass-pink" style="border: 2px solid #fff; width: 400px; background: #000;">
             <span class="close-report-modal" onclick="closeReportModal()"
@@ -141,20 +134,19 @@
 
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
-        <!-- Disabled initially, enabled by JS -->
         <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()" disabled
             style="opacity: 0.5;">LADEN...</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts v83 -->
-    <script src="config.js?v=83"></script>
-    <script src="auth.js?v=83"></script>
-    <script src="user-management.js?v=83"></script>
-    <script src="swipe.js?v=83"></script>
-    <script src="webrtc.js?v=83"></script>
-    <script src="script.js?v=83"></script>
-    <script src="report.js?v=83"></script>
+    <!-- Scripts v84 -->
+    <script src="config.js?v=84"></script>
+    <script src="auth.js?v=84"></script>
+    <script src="user-management.js?v=84"></script>
+    <script src="swipe.js?v=84"></script>
+    <script src="webrtc.js?v=84"></script>
+    <script src="script.js?v=84"></script>
+    <script src="report.js?v=84"></script>
 
     <script>
         function startMobileChat() {
