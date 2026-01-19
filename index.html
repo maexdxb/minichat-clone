@@ -73,17 +73,34 @@
     </main>
 
     <section class="controls-bar">
-        <div class="control-group start-stop" style="display: flex; gap: 10px; width: 100%; justify-content: center;">
+        <div class="control-group start-stop">
+            <button class="btn-control btn-start" id="btnNext"> <!-- btn-start visual style, acts as next/start -->
+                <i class="fa-solid fa-play"></i>
+                <span class="btn-text">
+                    <span class="big-text">Start</span>
+                </span>
+            </button>
             <button class="btn-control btn-stop" id="btnStop" disabled>
                 <i class="fa-solid fa-stop"></i>
-                <span>Stopp</span>
-            </button>
-            <button class="btn-control btn-next" id="btnNext">
-                <i class="fa-solid fa-forward"></i>
-                <span>Weiter</span>
+                <span class="btn-text">
+                    <span class="big-text">Stopp</span>
+                </span>
             </button>
         </div>
+
+        <div class="disclaimer-text">
+            Durch Klicken auf "Start" akzeptieren Sie die <a href="#">Regeln</a>.<br>
+            Verstöße führen zur Sperrung.
+        </div>
     </section>
+
+    <footer class="chat-footer">
+        <div class="chat-input-container">
+            <input type="text" placeholder="Schreibe eine Nachricht..." class="chat-input" id="chatInput">
+            <button class="emoji-btn" id="btnEmoji">😊</button>
+            <button class="send-btn" id="btnSend"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </footer>
 
     <!-- Country Selection Modal -->
     <div id="countryModal" class="modal">
@@ -184,13 +201,13 @@
     </div>
 
     <!-- Scripts -->
-    <script src="config.js?v=73"></script>
-    <script src="auth.js?v=73"></script>
-    <script src="user-management.js?v=73"></script>
-    <script src="swipe.js?v=73"></script>
-    <script src="webrtc.js?v=73"></script>
-    <script src="script.js?v=73"></script>
-    <script src="report.js?v=73"></script>
+    <script src="config.js?v=74"></script>
+    <script src="auth.js?v=74"></script>
+    <script src="user-management.js?v=74"></script>
+    <script src="swipe.js?v=74"></script>
+    <script src="webrtc.js?v=74"></script>
+    <script src="script.js?v=74"></script>
+    <script src="report.js?v=74"></script>
 </body>
 
 </html>
