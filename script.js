@@ -250,6 +250,12 @@ function setupEventListeners() {
         btnLogin.addEventListener('click', () => authManager.signInWithGoogle());
     }
 
+    // Mobile Text Update
+    if (window.innerWidth <= 768) {
+        const searchText = document.querySelector('.search-text');
+        if (searchText) searchText.textContent = 'WISCHE FÜR WEITER';
+    }
+
     // Modal close buttons
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', closeModals);

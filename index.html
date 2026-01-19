@@ -139,14 +139,28 @@
         </div>
     </div>
 
+    <!-- Start Overlay (Mobile) -->
+    <div id="start-overlay">
+        <button class="tap-to-start-btn" onclick="startMobileChat()">START</button>
+        <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
+    </div>
+
     <!-- Scripts -->
-    <script src="config.js?v=79"></script>
-    <script src="auth.js?v=79"></script>
-    <script src="user-management.js?v=79"></script>
-    <script src="swipe.js?v=79"></script>
-    <script src="webrtc.js?v=79"></script>
-    <script src="script.js?v=79"></script>
-    <script src="report.js?v=79"></script>
+    <script src="config.js?v=80"></script>
+    <script src="auth.js?v=80"></script>
+    <script src="user-management.js?v=80"></script>
+    <script src="swipe.js?v=80"></script>
+    <script src="webrtc.js?v=80"></script>
+    <script src="script.js?v=80"></script>
+    <script src="report.js?v=80"></script>
+
+    <script>
+        function startMobileChat() {
+            document.getElementById('start-overlay').style.display = 'none';
+            // Trigger startChat from script.js
+            if (window.startChat) window.startChat();
+        }
+    </script>
 </body>
 
 </html>
