@@ -199,6 +199,16 @@ window.startChat = async function () {
         return;
     }
 
+    // CHECK BAN STATUS BEFORE STARTING
+    if (window.userManagement && authManager.currentUser) {
+        const banStatus = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+        if (!banStatus.allowed) {
+            // User is banned - show ban modal
+            showBanModal(banStatus);
+            return;
+        }
+    }
+
     try {
         isActive = true;
         updateUIState('searching');
@@ -294,6 +304,32 @@ function performBanCheck() {
     if (window.userManagement && authManager.currentUser) {
         userManagement.checkUserStatus(authManager.currentUser.id);
     }
+}
+
+function showBanModal(banStatus) {
+    const modal = document.getElementById('banModal');
+    const reasonText = document.getElementById('ban-reason-text');
+    const durationText = document.getElementById('ban-duration-text');
+    const evidenceImg = document.getElementById('ban-evidence-img');
+
+    if (reasonText) reasonText.textContent = banStatus.reason || 'Verstoß gegen Regeln';
+
+    if (durationText) {
+        if (banStatus.type === 'permanent') {
+            durationText.textContent = 'Permanent';
+        } else if (banStatus.hoursLeft) {
+            durationText.textContent = `${banStatus.hoursLeft} Stunden`;
+        }
+    }
+
+    if (evidenceImg && banStatus.evidence) {
+        evidenceImg.src = banStatus.evidence;
+        evidenceImg.style.display = 'block';
+    } else if (evidenceImg) {
+        evidenceImg.style.display = 'none';
+    }
+
+    if (modal) modal.style.display = 'flex';
 }
 
 // Helpers for Modals
