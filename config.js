@@ -6,8 +6,8 @@ const SIAGECHAT_CONFIG = {
 
     // Supabase Configuration (Optional - for Google Login)
     supabase: {
-        url: 'https://jpvvlmqcqxmreffjhfvm.supabase.co',
-        anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwdnZsbXFjcXhtcmVmZmpoZnZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc0OTQ0MjMsImV4cCI6MjA1MzA3MDQyM30.xPJxedu'
+        url: 'https://jpuyhmdqumxdfpfhtvim.supabase.co',
+        anonKey: 'sb_publishable_pmUooMDz9MY54pEbTSBtvg_-a2J2wdu'
     },
 
     // Feature flags
