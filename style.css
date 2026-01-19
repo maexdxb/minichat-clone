@@ -173,13 +173,6 @@ video {
     transform: scaleX(-1);
 }
 
-/* Desktop: All videos use contain for consistent display */
-@media (min-width: 769px) {
-    video {
-        object-fit: contain;
-    }
-}
-
 .video-label {
     position: absolute;
     bottom: 10px;
