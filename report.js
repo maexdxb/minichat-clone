@@ -85,10 +85,10 @@ if (btnConfirmReport) {
                     });
 
                 if (error) {
-                    console.error('Supabase Report Error:', error);
-                    // Don't block UI on error, just log it
+                    console.error('❌ Supabase Report Error:', error);
+                    showNotification('Fehler beim Senden der Meldung! ❌');
                 } else {
-                    console.log('✅ Report saved to database');
+                    console.log('✅ Report saved to database successfully!');
                 }
             }
         } catch (err) {

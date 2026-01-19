@@ -338,8 +338,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="config.js"></script>
-    <script src="user-management.js"></script>
+    <script src="config.js?v=49"></script>
+    <script src="user-management.js?v=49"></script>
     <script>
         // Global variables
         let userManagement;
@@ -512,17 +512,22 @@
         }
 
         async function loadReports() {
+            console.log('📡 Loading reports from Supabase...');
             const tbody = document.getElementById('reports-tbody');
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Lade...</td></tr>';
 
             const { data, error } = await supabaseClient.from('reports').select('*').order('created_at', { ascending: false });
 
             if (error) {
+                console.error('❌ Supabase error loading reports:', error);
                 tbody.innerHTML = `<tr><td colspan="5" style="color:red">Error: ${error.message}</td></tr>`;
                 return;
             }
+
+            console.log('✅ Reports loaded:', data.length, data);
+
             if (!data.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Keine Meldungen.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Keine Meldungen gefunden.</td></tr>';
                 return;
             }
 
