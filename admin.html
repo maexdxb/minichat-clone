@@ -371,7 +371,7 @@
                             .update({ last_seen: new Date().toISOString() })
                             .eq('user_id', session.user.id);
                     }
-                }, 60000); // Jede Minute
+                }, 30000); // Alle 30 Sekunden (wichtig bei 1min timeout!)
 
                 // Load users initially
                 log('📦 Lade User-Liste...');
@@ -396,8 +396,8 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('users-table').style.display = 'block';
 
-            // Calculate active users (seen in last 15 minutes)
-            const activeThreshold = new Date(Date.now() - 15 * 60 * 1000);
+            // Calculate active users (seen in last 1 minute)
+            const activeThreshold = new Date(Date.now() - 1 * 60 * 1000);
 
             // --- DEBUG ---
             log('🕒 Zeit-Check: ' + new Date().toLocaleTimeString());
