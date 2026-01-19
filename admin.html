@@ -225,12 +225,7 @@
 <body>
     <div class="container">
         <h1><i class="fas fa-shield-alt"></i> Admin Panel</h1>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <p class="subtitle" style="margin-bottom: 0;">Nutzer-Verwaltung für Siagechat</p>
-            <button class="btn btn-primary" onclick="loadUsers()">
-                <i class="fas fa-sync-alt"></i> Aktualisieren
-            </button>
-        </div>
+        <p class="subtitle">Nutzer-Verwaltung für Siagechat</p>
 
         <div id="error-message" class="error" style="display: none;"></div>
 
@@ -370,12 +365,11 @@
                 // Start Heartbeat (damit Admin auch online bleibt)
                 setInterval(async () => {
                     if (session && session.user) {
-                        await supabaseClient.from('user_management').upsert({
-                            user_id: session.user.id,
-                            email: session.user.email,
-                            last_seen: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'user_id' });
+                        // Simple UPDATE instead of UPSERT to avoid permission issues
+                        await supabaseClient
+                            .from('user_management')
+                            .update({ last_seen: new Date().toISOString() })
+                            .eq('user_id', session.user.id);
                     }
                 }, 60000); // Jede Minute
 
