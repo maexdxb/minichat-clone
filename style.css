@@ -165,6 +165,8 @@ video {
     height: 100%;
     /* Mobile & Desktop: Cover (Immersive) */
     object-fit: cover;
+    object-position: center 30%;
+    /* Shift focus slightly up */
     background: #000;
 }
 
