@@ -156,14 +156,14 @@
     </div>
 
     <!-- Report Modal -->
-    <div id="reportModal" class="modal">
-        <div class="modal-content report-content">
+    <div id="reportModal" class="modal" style="align-items: flex-start; padding-top: 50px;">
+        <div class="modal-content report-content" style="max-height: 85vh; overflow-y: auto;">
             <span class="close-report-modal" onclick="closeReportModal()">&times;</span>
             <h2><i class="fas fa-exclamation-triangle"></i> Missbrauch melden</h2>
 
-            <div class="report-preview">
+            <div class="report-preview" style="text-align: center;">
                 <img id="reportScreenshot" src="" alt="Screenshot Beweis"
-                    style="width: 100%; border-radius: 8px; margin-bottom: 15px; display: none;">
+                    style="width: auto; max-width: 100%; max-height: 250px; border-radius: 8px; margin-bottom: 15px; display: none; object-fit: contain;">
             </div>
 
             <p>Wollen Sie diesen Benutzer wirklich wegen unangemessenem Verhalten melden?</p>

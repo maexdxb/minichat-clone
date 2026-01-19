@@ -219,16 +219,51 @@
             border-radius: 4px;
             margin-bottom: 20px;
         }
+
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .report-img-thumb {
+            width: 50px;
+            height: 30px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+
+        .report-img-full {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1><i class="fas fa-shield-alt"></i> Admin Panel</h1>
+        <h1><i class="fas fa-shield-alt"></i>Admin Panel</h1>
         <p class="subtitle">Nutzer-Verwaltung für Siagechat</p>
-
         <div id="error-message" class="error" style="display: none;"></div>
-
         <div class="stats">
             <div class="stat-card">
                 <div class="stat-number" id="total-users">0</div>
@@ -243,291 +278,484 @@
                 <div class="stat-label">Gesperrte Nutzer</div>
             </div>
         </div>
-
-        <div id="loading" class="loading">
-            <i class="fas fa-spinner fa-spin fa-3x"></i>
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchTab('users')"><i class="fas fa-users"></i>Nutzer</div>
+            <div class="nav-tab" onclick="switchTab('reports')"><i class="fas fa-flag"></i>Meldungen</div>
+        </div>
+        <div id="loading" class="loading"><i class="fas fa-spinner fa-spin fa-3x"></i>
             <p>Lade Nutzerdaten...</p>
         </div>
-
-        <div id="users-table" style="display: none;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Name</th>
-                        <th>Status</th>
-                        <th>Account</th>
-                        <th>Zuletzt gesehen</th>
-                        <th>Grund</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody id="users-tbody">
-                </tbody>
-            </table>
-        </div>
     </div>
-
-    <!-- Ban Modal -->
-    <div id="ban-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="modal-title">Nutzer sperren</h2>
-            <div class="form-group">
-                <label>Sperrtyp:</label>
-                <select id="ban-type">
-                    <option value="temp">Temporär</option>
-                    <option value="perm">Permanent</option>
-                </select>
-            </div>
-            <div class="form-group" id="hours-group">
-                <label>Dauer (Stunden):</label>
-                <input type="number" id="ban-hours" value="24" min="1">
-            </div>
-            <div class="form-group">
-                <label>Grund:</label>
-                <textarea id="ban-reason" placeholder="Grund für die Sperre..."></textarea>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="confirmBan()">Sperren</button>
-                <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+    < !-- Users Table -->
+        <div id="users-view" class="tab-content">
+            <div id="users-table" style="display: none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Account</th>
+                            <th>Zuletzt gesehen</th>
+                            <th>Grund</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-tbody"></tbody>
+                </table>
             </div>
         </div>
-    </div>
+        < !-- End Users View -->
+            < !-- Reports View -->
+                <div id="reports-view" class="tab-content" style="display: none;">
+                    <div id="reports-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Zeit</th>
+                                    <th>Grund</th>
+                                    <th>Beweis</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-tbody">
+                                <tr>
+                                    <td colspan="5" style="text-align: center;">Lade Meldungen...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                </div>
+                < !-- Ban Modal -->
+                    <div id="ban-modal" class="modal">
+                        <div class="modal-content">
+                            <h2 id="modal-title">Nutzer sperren</h2>
+                            <div class="form-group"><label>Sperrtyp:</label><select id="ban-type">
+                                    <option value="temp">Temporär</option>
+                                    <option value="perm">Permanent</option>
+                                </select></div>
+                            <div class="form-group" id="hours-group"><label>Dauer (Stunden):</label><input type="number"
+                                    id="ban-hours" value="24" min="1"></div>
+                            <div class="form-group"><label>Grund:</label><textarea id="ban-reason"
+                                    placeholder="Grund für die Sperre..."></textarea></div>
+                            <div class="modal-buttons"><button class="btn btn-primary"
+                                    onclick="confirmBan()">Sperren</button><button class="btn btn-secondary"
+                                    onclick="closeModal()">Abbrechen</button></div>
+                        </div>
+                    </div>
+                    < !-- Report Review Modal -->
+                        <div id="review-modal" class="modal">
+                            <div class="modal-content" style="min-width: 600px;">
+                                <h2>Meldung prüfen</h2>
+                                <div style="background: #f9f9f9; padding: 10px; margin-bottom: 15px;"><img
+                                        id="review-img" class="report-img-full" src="">
+                                    <p><strong>Grund:</strong><span id="review-reason">-</span></p>
+                                    <p><strong>Reporter ID:</strong><span id="review-reporter">-</span></p>
+                                    <p><strong>Zeit:</strong><span id="review-time">-</span></p>
+                                </div>
+                                <div class="modal-buttons"><button class="btn btn-secondary"
+                                        onclick="document.getElementById('review-modal').style.display='none'">Schließen</button><button
+                                        class="btn btn-unban" onclick="markReportReviewed()">Als geprüft
+                                        markieren</button></div>
+                            </div>
+                        </div>
+                        <script src="config.js"></script>
+                        <script src="user-management.js"></script>
+                        <script> // let supabase; // Removed duplicate
+                            let userManagement;
+                            let currentUserId = null;
+                            let supabaseClient; // Renamed to avoid window.supabase conflict
 
-    <script src="config.js"></script>
-    <script src="user-management.js"></script>
-    <script>
-        // let supabase; // Removed duplicate
-        let userManagement;
-        let currentUserId = null;
-        let supabaseClient; // Renamed to avoid window.supabase conflict
+                            // Initialize
+                            function log(msg) {
+                                console.log(msg);
+                                const debugC = document.getElementById('debug-console');
 
-        // Initialize
-        function log(msg) {
-            console.log(msg);
-            const debugC = document.getElementById('debug-console');
-            if (debugC) debugC.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
-        }
+                                if (debugC) debugC.innerHTML += `<div>$ {
+                new Date().toLocaleTimeString()
+            }
 
-        async function init() {
-            try {
-                // Show debug info
-                const container = document.querySelector('.container');
-                if (!document.getElementById('debug-console')) {
-                    const d = document.createElement('div');
-                    d.id = 'debug-console';
-                    d.style.cssText = 'margin-top: 20px; padding: 10px; background: #eee; border: 1px solid #999; font-family: monospace; font-size: 12px; color: #333; max-height: 200px; overflow-y: auto;';
-                    container.appendChild(d);
-                }
+            - $ {
+                msg
+            }
 
-                log('🚀 Starte Admin-Panel Init...');
+            </div>`;
+                            }
 
-                // Initialize Supabase
-                const { createClient } = supabase;
-                if (!SIAGECHAT_CONFIG.supabase.url) throw new Error('Supabase URL fehlt in Config!');
+                            async function init() {
+                                try {
+                                    // Show debug info
+                                    const container = document.querySelector('.container');
 
-                supabaseClient = createClient(SIAGECHAT_CONFIG.supabase.url, SIAGECHAT_CONFIG.supabase.anonKey);
-                log('✅ Supabase Client erstellt');
+                                    if (!document.getElementById('debug-console')) {
+                                        const d = document.createElement('div');
+                                        d.id = 'debug-console';
+                                        d.style.cssText = 'margin-top: 20px; padding: 10px; background: #eee; border: 1px solid #999; font-family: monospace; font-size: 12px; color: #333; max-height: 200px; overflow-y: auto;';
+                                        container.appendChild(d);
+                                    }
 
-                userManagement = new UserManagement(supabaseClient);
-                log('✅ UserManagement initialisiert');
+                                    log('🚀 Starte Admin-Panel Init...');
 
-                // Check if logged in
-                const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
+                                    // Initialize Supabase
+                                    const {
+                                        createClient
+                                    }
 
-                if (authError) {
-                    log('❌ Auth Fehler: ' + authError.message);
-                    throw authError;
-                }
+                                        = supabase;
+                                    if (!SIAGECHAT_CONFIG.supabase.url) throw new Error('Supabase URL fehlt in Config!');
 
-                if (!session) {
-                    log('⚠️ Rote Karte: Keine Session gefunden! User ist nicht eingeloggt.');
-                    showError('Du bist nicht eingeloggt! Bitte gehe zur Startseite und melde dich an.');
-                    setTimeout(() => window.location.href = 'index.html', 3000);
-                    return;
-                }
+                                    supabaseClient = createClient(SIAGECHAT_CONFIG.supabase.url, SIAGECHAT_CONFIG.supabase.anonKey);
+                                    log('✅ Supabase Client erstellt');
 
-                log('✅ User ist eingeloggt als: ' + session.user.email);
-                log('User ID: ' + session.user.id);
+                                    userManagement = new UserManagement(supabaseClient);
+                                    log('✅ UserManagement initialisiert');
 
-                // Check if admin
-                log('🔍 Prüfe Admin-Rechte...');
-                const isAdmin = await userManagement.isAdmin(session.user.id);
+                                    // Check if logged in
+                                    const {
+                                        data: {
+                                            session
+                                        }
 
-                if (!isAdmin) {
-                    log('❌ Zugriff verweigert: User steht nicht in admins Tabelle.');
-                    showError('Du hast keine Admin-Berechtigung! (Email: ' + session.user.email + ')');
-                    return;
-                }
+                                        ,
+                                        error: authError
+                                    }
 
-                log('✅ Admin-Rechte bestätigt!');
+                                        = await supabaseClient.auth.getSession();
 
-                // Start Heartbeat (damit Admin auch online bleibt)
-                setInterval(async () => {
-                    if (session && session.user) {
-                        // Simple UPDATE instead of UPSERT to avoid permission issues
-                        await supabaseClient
-                            .from('user_management')
-                            .update({ last_seen: new Date().toISOString() })
-                            .eq('user_id', session.user.id);
+                                    if (authError) {
+                                        log('❌ Auth Fehler: ' + authError.message);
+                                        throw authError;
+                                    }
+
+                                    if (!session) {
+                                        log('⚠️ Rote Karte: Keine Session gefunden! User ist nicht eingeloggt.');
+                                        showError('Du bist nicht eingeloggt! Bitte gehe zur Startseite und melde dich an.');
+                                        setTimeout(() => window.location.href = 'index.html', 3000);
+                                        return;
+                                    }
+
+                                    log('✅ User ist eingeloggt als: ' + session.user.email);
+                                    log('User ID: ' + session.user.id);
+
+                                    // Check if admin
+                                    log('🔍 Prüfe Admin-Rechte...');
+                                    const isAdmin = await userManagement.isAdmin(session.user.id);
+
+                                    if (!isAdmin) {
+                                        log('❌ Zugriff verweigert: User steht nicht in admins Tabelle.');
+                                        showError('Du hast keine Admin-Berechtigung! (Email: ' + session.user.email + ')');
+                                        return;
+                                    }
+
+                                    log('✅ Admin-Rechte bestätigt!');
+
+                                    // Start Heartbeat (damit Admin auch online bleibt)
+                                    setInterval(async () => {
+                                        if (session && session.user) {
+
+                                            // Simple UPDATE instead of UPSERT to avoid permission issues
+                                            await supabaseClient.from('user_management').update({
+                                                last_seen: new Date().toISOString()
+                                            }).eq('user_id', session.user.id);
+                                        }
+                                    }
+
+                                        , 30000); // Alle 30 Sekunden (wichtig bei 1min timeout!)
+
+                                    // Load users initially
+                                    log('📦 Lade User-Liste...');
+                                    await loadUsers();
+                                    log('✅ User-Liste geladen!');
+
+                                    // Auto-Refresh Users Table
+                                    setInterval(() => {
+                                        loadUsers();
+                                    }
+
+                                        , 30000); // Alle 30 Sekunden
+
+                                }
+
+                                catch (error) {
+                                    console.error('Init error:', error);
+                                    log('💥 FATALER FEHLER: ' + error.message);
+                                    showError('Fehler: ' + error.message);
+                                }
+                            }
+
+                            async function loadUsers() {
+                                const users = await userManagement.getAllUsers();
+
+                                document.getElementById('loading').style.display = 'none';
+                                document.getElementById('users-table').style.display = 'block';
+
+                                // Calculate active users (seen in last 1 minute)
+                                const activeThreshold = new Date(Date.now() - 1 * 60 * 1000);
+
+                                // --- DEBUG ---
+                                log('🕒 Zeit-Check: ' + new Date().toLocaleTimeString());
+
+                                if (users.length > 0) {
+                                    const u = users[0];
+
+                                    log(`👤 User $ {
+                        u.email
                     }
-                }, 30000); // Alle 30 Sekunden (wichtig bei 1min timeout!)
 
-                // Load users initially
-                log('📦 Lade User-Liste...');
-                await loadUsers();
-                log('✅ User-Liste geladen!');
-
-                // Auto-Refresh Users Table
-                setInterval(() => {
-                    loadUsers();
-                }, 30000); // Alle 30 Sekunden
-
-            } catch (error) {
-                console.error('Init error:', error);
-                log('💥 FATALER FEHLER: ' + error.message);
-                showError('Fehler: ' + error.message);
-            }
-        }
-
-        async function loadUsers() {
-            const users = await userManagement.getAllUsers();
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('users-table').style.display = 'block';
-
-            // Calculate active users (seen in last 1 minute)
-            const activeThreshold = new Date(Date.now() - 1 * 60 * 1000);
-
-            // --- DEBUG ---
-            log('🕒 Zeit-Check: ' + new Date().toLocaleTimeString());
-            if (users.length > 0) {
-                const u = users[0];
-                log(`👤 User ${u.email}: last_seen=${u.last_seen}`);
-            }
-            // --- DEBUG ---
-
-            const onlineUsers = users.filter(u => {
-                const lastSeen = u.last_seen ? new Date(u.last_seen) : new Date(0);
-                return lastSeen > activeThreshold;
-            });
-
-            // Update stats
-            document.getElementById('total-users').textContent = users.length;
-            document.getElementById('active-users').textContent = onlineUsers.length;
-            document.getElementById('banned-users').textContent = users.filter(u => u.status !== 'active').length;
-
-            // Render table
-            const tbody = document.getElementById('users-tbody');
-            tbody.innerHTML = users.map(user => {
-                const lastSeen = user.last_seen ? new Date(user.last_seen) : null;
-                const isOnline = lastSeen && lastSeen > activeThreshold;
-                const lastSeenText = lastSeen ? lastSeen.toLocaleString('de-DE') : 'Nie';
-
-                return `
-                <tr>
-                    <td>${user.email}</td>
-                    <td>${user.display_name || '-'}</td>
-                    <td>
-                        ${isOnline ?
-                        '<span class="status-badge status-active">● Online</span>' :
-                        '<span style="color: grey;">○ Offline</span>'
+                    : last_seen=$ {
+                        u.last_seen
                     }
-                    </td>
-                    <td><span class="status-badge status-${user.status}">${getStatusText(user.status)}</span></td>
-                    <td>${lastSeenText}</td>
-                    <td>${user.ban_reason || '-'}</td>
-                    <td>
-                        ${user.status === 'active' ? `
-                            <button class="btn btn-ban-temp" onclick="openBanModal('${user.user_id}', 'temp')">
-                                <i class="fas fa-clock"></i> Temp
-                            </button>
-                            <button class="btn btn-ban-perm" onclick="openBanModal('${user.user_id}', 'perm')">
-                                <i class="fas fa-ban"></i> Perm
-                            </button>
-                        ` : `
-                            <button class="btn btn-unban" onclick="unbanUser('${user.user_id}')">
-                                <i class="fas fa-check"></i> Entsperren
-                            </button>
-                        `}
-                    </td>
-                </tr>
-            `}).join('');
-        }
 
-        function getStatusText(status) {
-            const texts = {
-                'active': 'Aktiv',
-                'temp_banned': 'Gesperrt (Temp)',
-                'perm_banned': 'Gesperrt (Perm)'
-            };
-            return texts[status] || status;
-        }
+                    `);
+                                }
 
-        function openBanModal(userId, type) {
-            currentUserId = userId;
-            document.getElementById('ban-type').value = type;
-            document.getElementById('hours-group').style.display = type === 'temp' ? 'block' : 'none';
-            document.getElementById('ban-modal').style.display = 'flex';
-        }
+                                // --- DEBUG ---
 
-        function closeModal() {
-            document.getElementById('ban-modal').style.display = 'none';
-            currentUserId = null;
-        }
+                                const onlineUsers = users.filter(u => {
+                                    const lastSeen = u.last_seen ? new Date(u.last_seen) : new Date(0);
+                                    return lastSeen > activeThreshold;
+                                });
 
-        async function confirmBan() {
-            const type = document.getElementById('ban-type').value;
-            const hours = parseInt(document.getElementById('ban-hours').value);
-            const reason = document.getElementById('ban-reason').value;
+                                // Update stats
+                                document.getElementById('total-users').textContent = users.length;
+                                document.getElementById('active-users').textContent = onlineUsers.length;
+                                document.getElementById('banned-users').textContent = users.filter(u => u.status !== 'active').length;
 
-            if (!reason.trim()) {
-                alert('Bitte gib einen Grund an!');
-                return;
+                                // Render table
+                                const tbody = document.getElementById('users-tbody');
+
+                                tbody.innerHTML = users.map(user => {
+                                    const lastSeen = user.last_seen ? new Date(user.last_seen) : null;
+                                    const isOnline = lastSeen && lastSeen > activeThreshold;
+                                    const lastSeenText = lastSeen ? lastSeen.toLocaleString('de-DE') : 'Nie';
+
+                                    return ` <tr> <td>$ {
+                        user.email
+                    }
+
+                    </td> <td>$ {
+                        user.display_name || '-'
+                    }
+
+                    </td> <td> $ {
+                        isOnline ? '<span class="status-badge status-active">● Online</span>' : '<span style="color: grey;">○ Offline</span>'
+                    }
+
+                    </td> <td><span class="status-badge status-${user.status}" >$ {
+                        getStatusText(user.status)
+                    }
+
+                    </span></td> <td>$ {
+                        lastSeenText
+                    }
+
+                    </td> <td>$ {
+                        user.ban_reason || '-'
+                    }
+
+                    </td> <td> $ {
+                        user.status==='active' ? ` < button class="btn btn-ban-temp" onclick = "openBanModal('${user.user_id}', 'temp')" > <i class="fas fa-clock" ></i> Temp </button > <button class="btn btn-ban-perm" onclick="openBanModal('${user.user_id}', 'perm')" > <i class="fas fa-ban" ></i> Perm </button> ` : ` < button class="btn btn-unban" onclick = "unbanUser('${user.user_id}')" > <i class="fas fa-check" ></i> Entsperren </button > `
+                    }
+
+                    </td> </tr> `
+                                }).join('');
+                            }
+
+                            function getStatusText(status) {
+                                const texts = {
+                                    'active': 'Aktiv',
+                                    'temp_banned': 'Gesperrt (Temp)',
+                                    'perm_banned': 'Gesperrt (Perm)'
+                                }
+
+                                    ;
+                                return texts[status] || status;
+                            }
+
+                            function openBanModal(userId, type) {
+                                currentUserId = userId;
+                                document.getElementById('ban-type').value = type;
+                                document.getElementById('hours-group').style.display = type === 'temp' ? 'block' : 'none';
+                                document.getElementById('ban-modal').style.display = 'flex';
+                            }
+
+                            function closeModal() {
+                                document.getElementById('ban-modal').style.display = 'none';
+                                currentUserId = null;
+                            }
+
+                            async function confirmBan() {
+                                const type = document.getElementById('ban-type').value;
+                                const hours = parseInt(document.getElementById('ban-hours').value);
+                                const reason = document.getElementById('ban-reason').value;
+
+                                if (!reason.trim()) {
+                                    alert('Bitte gib einen Grund an!');
+                                    return;
+                                }
+
+                                const {
+                                    data: {
+                                        session
+                                    }
+                                }
+
+                                    = await supabaseClient.auth.getSession();
+
+                                let result;
+
+                                if (type === 'temp') {
+                                    result = await userManagement.banUserTemporary(currentUserId, hours, reason, session.user.id);
+                                }
+
+                                else {
+                                    result = await userManagement.banUserPermanent(currentUserId, reason, session.user.id);
+                                }
+
+                                if (result.success) {
+                                    closeModal();
+                                    await loadUsers();
+                                }
+
+                                else {
+                                    alert('Fehler beim Sperren: ' + result.error.message);
+                                }
+                            }
+
+                            async function unbanUser(userId) {
+                                if (!confirm('Nutzer wirklich entsperren?')) return;
+
+                                const result = await userManagement.unbanUser(userId);
+
+                                if (result.success) {
+                                    await loadUsers();
+                                }
+
+                                else {
+                                    alert('Fehler beim Entsperren: ' + result.error.message);
+                                }
+                            }
+
+                            function showError(message) {
+                                const errorDiv = document.getElementById('error-message');
+                                errorDiv.textContent = message;
+                                errorDiv.style.display = 'block';
+                            }
+
+                            // Ban type change
+                            document.getElementById('ban-type')?.addEventListener('change', (e) => {
+                                document.getElementById('hours-group').style.display = e.target.value === 'temp' ? 'block' : 'none';
+                            });
+
+                            // Tab switching
+                            window.switchTab = function (tabName) {
+                                // Update Headers
+                                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                                const clickedTab = document.querySelector(`.nav-tab[onclick="switchTab('${tabName}')"]`);
+                                if (clickedTab) clickedTab.classList.add('active');
+
+                                // Toggle Views
+                                document.getElementById('users-view').style.display = tabName === 'users' ? 'block' : 'none';
+                                document.getElementById('reports-view').style.display = tabName === 'reports' ? 'block' : 'none';
+
+                                if (tabName === 'reports') {
+                                    loadReports();
+                                }
+                            }
+
+                            // Load Reports
+                            async function loadReports() {
+                                const tbody = document.getElementById('reports-tbody');
+                                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Lade Meldungen...</td></tr>';
+
+                                const {
+                                    data: reports, error
+                                }
+
+                                    = await supabaseClient.from('reports').select('*').order('created_at', {
+                                        ascending: false
+                                    });
+
+                                if (error) {
+                                    console.error('Error loading reports:', error);
+
+                                    tbody.innerHTML = `<tr><td colspan="5" style="color: red; text-align: center;">Fehler: $ {
+                error.message
             }
 
-            const { data: { session } } = await supabaseClient.auth.getSession();
+            </td></tr>`;
+                                    return;
+                                }
 
-            let result;
-            if (type === 'temp') {
-                result = await userManagement.banUserTemporary(currentUserId, hours, reason, session.user.id);
-            } else {
-                result = await userManagement.banUserPermanent(currentUserId, reason, session.user.id);
-            }
+                                if (!reports || reports.length === 0) {
+                                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Keine Meldungen vorhanden.</td></tr>';
+                                    return;
+                                }
 
-            if (result.success) {
-                closeModal();
-                await loadUsers();
-            } else {
-                alert('Fehler beim Sperren: ' + result.error.message);
-            }
-        }
+                                tbody.innerHTML = reports.map(report => {
+                                    const date = new Date(report.created_at).toLocaleString('de-DE');
+                                    const statusClass = report.status === 'pending' ? 'status-perm_banned' : 'status-active'; // Red for pending, green for reviewed
+                                    const statusText = report.status === 'pending' ? 'Offen' : 'Geprüft';
 
-        async function unbanUser(userId) {
-            if (!confirm('Nutzer wirklich entsperren?')) return;
+                                    return ` <tr> <td>$ {
+                    date
+                }
 
-            const result = await userManagement.unbanUser(userId);
-            if (result.success) {
-                await loadUsers();
-            } else {
-                alert('Fehler beim Entsperren: ' + result.error.message);
-            }
-        }
+                </td> <td>$ {
+                    report.reason || '-'
+                }
 
-        function showError(message) {
-            const errorDiv = document.getElementById('error-message');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
+                </td> <td> <img src="${report.screenshot}" class="report-img-thumb" onclick="openReviewModal('${report.id}')" > </td> <td><span class="status-badge ${statusClass}" >$ {
+                    statusText
+                }
 
-        // Ban type change
-        document.getElementById('ban-type')?.addEventListener('change', (e) => {
-            document.getElementById('hours-group').style.display = e.target.value === 'temp' ? 'block' : 'none';
-        });
+                </span></td> <td> <button class="btn btn-primary" onclick="openReviewModal('${report.id}')" > <i class="fas fa-eye" ></i> Prüfen </button> </td> </tr> `
+                                }).join('');
 
-        // Initialize on load
-        init();
-    </script>
+                                // Store reports globally for modal access
+                                window.currentReports = reports;
+                            }
+
+                            // Review Modal
+                            window.openReviewModal = function (reportId) {
+                                const report = window.currentReports.find(r => r.id == reportId);
+                                if (!report) return;
+
+                                window.currentReviewReportId = reportId;
+                                document.getElementById('review-img').src = report.screenshot;
+                                document.getElementById('review-reason').textContent = report.reason;
+                                document.getElementById('review-reporter').textContent = report.reporter_id || 'Anonym';
+                                document.getElementById('review-time').textContent = new Date(report.created_at).toLocaleString();
+
+                                document.getElementById('review-modal').style.display = 'flex';
+                            }
+
+                            async function markReportReviewed() {
+                                if (!window.currentReviewReportId) return;
+
+                                const {
+                                    error
+                                }
+
+                                    = await supabaseClient.from('reports').update({
+                                        status: 'reviewed'
+                                    }).eq('id', window.currentReviewReportId);
+
+                                if (error) {
+                                    alert('Fehler: ' + error.message);
+                                }
+
+                                else {
+                                    document.getElementById('review-modal').style.display = 'none';
+                                    loadReports(); // Refresh table
+                                }
+                            }
+
+                            // Initialize on load
+                            init();
+                        </script>
 </body>
 
 </html>

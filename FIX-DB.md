@@ -56,7 +56,7 @@ CREATE POLICY "Users can view own profile"
 ON public.user_management FOR SELECT
 USING (auth.uid() = user_id);
 
--- Nutzer dürfen ihren EIGENEN Eintrag erstellen (WICHTIG für Sync!)
+-- Nutzer dürfen ihren EIGENEN Eintrag erstellen (WICHTIG für Sync!)da steht aber bei nutzer noch immer 0 und es wird mir nix
 CREATE POLICY "Users can insert own profile"
 ON public.user_management FOR INSERT
 WITH CHECK (auth.uid() = user_id);

@@ -24,7 +24,7 @@ ON CONFLICT (user_id) DO NOTHING;
 -- ACHTUNG: Ersetze unten die Email mit DEINER Email!
 INSERT INTO public.admins (user_id, email)
 SELECT id, email FROM auth.users 
-WHERE email = 'deine-email@gmail.com' -- <--- HIER DEINE EMAIL EINTRAGEN !!!
+WHERE email = 'maxrbn2002@gmail.com' -- <--- HIER DEINE EMAIL EINTRAGEN !!!
 ON CONFLICT (user_id) DO NOTHING;
 
 -- 4. Berechtigungen sicherstellen update

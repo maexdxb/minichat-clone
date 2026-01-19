@@ -54,12 +54,43 @@ window.closeReportModal = function () {
 // Setup Event Listener for Confirm Button
 if (btnConfirmReport) {
     btnConfirmReport.addEventListener('click', async () => {
-        // Here we would normally send to backend:
-        // await submitReport(partnerId, screenshotData);
+        const btnText = btnConfirmReport.innerText;
+        btnConfirmReport.innerText = 'Sende...';
+        btnConfirmReport.disabled = true;
+
+        try {
+            // Prepare Data
+            const screenshotData = reportScreenshot.src; // Base64
+            // We assume authenticated user
+            let reporterId = null;
+            if (window.authManager && window.authManager.currentUser) {
+                reporterId = window.authManager.currentUser.id;
+            }
+
+            // Send to Supabase
+            if (window.authManager && window.authManager.supabase) {
+                const { error } = await window.authManager.supabase
+                    .from('reports')
+                    .insert({
+                        reporter_id: reporterId,
+                        reason: 'Unangemessenes Verhalten',
+                        screenshot: screenshotData,
+                        status: 'pending' // pending, reviewed
+                    });
+
+                if (error) {
+                    console.error('Supabase Report Error:', error);
+                    // Don't block UI on error, just log it
+                } else {
+                    console.log('✅ Report saved to database');
+                }
+            }
+        } catch (err) {
+            console.error('Report submission error:', err);
+        }
 
         // Visual feedback
         console.log('✅ Report submitted!');
-        const btnText = btnConfirmReport.innerText;
         btnConfirmReport.innerText = 'Gesendet!';
         btnConfirmReport.style.backgroundColor = '#28a745';
 
@@ -68,17 +99,14 @@ if (btnConfirmReport) {
             // Reset button
             btnConfirmReport.innerText = btnText;
             btnConfirmReport.style.backgroundColor = '#dc3545';
+            btnConfirmReport.disabled = false;
 
             // Show notification
-            // Assuming showNotification is global from script.js, if not fail gracefully
             if (typeof showNotification === 'function') {
                 showNotification('Benutzer wurde gemeldet. Danke für deine Mithilfe!');
             } else {
                 alert('Benutzer wurde gemeldet. Danke!');
             }
-
-            // Optionally skip this partner immediately?
-            // if (typeof skipPartner === 'function') skipPartner();
 
         }, 1000);
     });
