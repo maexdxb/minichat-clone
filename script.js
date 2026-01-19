@@ -275,13 +275,50 @@ window.stopChat = function () {
     updateUIState('idle');
 };
 
-window.skipPartner = function () {
-    console.log('⏭️ SKIP');
+window.skipPartner = async function () {
+    console.log('⏭️ SKIP REQUESTED');
+
+    // STRICT BAN CHECK BEFORE SKIPPING
+    if (authManager.currentUser) {
+        let isBanned = false;
+        let banData = null;
+
+        // Try UserManagement first
+        if (window.userManagement) {
+            const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+            if (!status.allowed) {
+                isBanned = true;
+                banData = status;
+            }
+        }
+
+        // Fallback to direct Supabase check if needed
+        if (!isBanned && authManager.supabase) {
+            const { data } = await authManager.supabase
+                .from('user_management')
+                .select('status, ban_reason')
+                .eq('user_id', authManager.currentUser.id)
+                .single();
+
+            if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) {
+                isBanned = true;
+                banData = { reason: data.ban_reason };
+            }
+        }
+
+        if (isBanned) {
+            console.log('🚫 User is banned, blocking skip.');
+            showBanModal(banData || { reason: 'Gesperrt' });
+            if (webrtcManager) webrtcManager.stop(); // Stop current connection
+            isActive = false;
+            updateUIState('idle');
+            return; // STOP execution
+        }
+    }
+
+    // Only if allowed:
     if (webrtcManager) webrtcManager.skip();
     updateUIState('searching');
-
-    // Check ban occasionally
-    performBanCheck();
 };
 
 function sendMessage() {
