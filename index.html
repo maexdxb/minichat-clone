@@ -3,211 +3,152 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Siagechat - Video Chat</title>
-    <link rel="stylesheet" href="style.css?v=25">
-    <link rel="stylesheet" href="report-style.css?v=25">
+    <script src="https://kit.fontawesome.com/004068565b.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Favicon -->
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Socket.io Client -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=75">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <header class="main-header">
         <div class="logo-container">
-            <span class="logo-icon"><i class="fa-solid fa-comment-dots"></i></span>
-            <span class="logo-text">Siagechat</span>
+            <i class="fa-solid fa-comment-dots logo-icon"></i>
+            <span>Siagechat</span>
         </div>
-        <nav class="main-nav">
-            <a href="#" class="nav-item active"><i class="fa-solid fa-video"></i> Video-Chat</a>
-            <a href="#" class="nav-item"><i class="fa-solid fa-magnifying-glass"></i> Freunde finden</a>
-            <a href="#" class="nav-item"><i class="fa-solid fa-table-cells-large"></i> Neue Fotos</a>
-        </nav>
+
         <div class="header-right">
-            <div class="online-counter">
-                <span class="pulse-dot"></span>
-                <span class="counter-text">
-                    <span id="onlineCount">0</span> online
-                </span>
+            <!-- Online Count Glass -->
+            <div class="online-counter liquid-glass-pink">
+                <div class="pulse-dot"></div>
+                <span id="onlineCount">0</span> online
             </div>
-            <!-- Guest login removed - Google OAuth required -->
-            <button class="btn-login"><i class="fa-solid fa-user"></i> Mit Google anmelden</button>
+
+            <!-- Auth Glass -->
+            <div class="auth-buttons">
+                <button id="btnLogin" class="btn-login liquid-glass-pink" onclick="window.authManager.signIn()">
+                    <i class="fa-brands fa-google"></i> Anmelden
+                </button>
+                <button id="btnLogout" class="btn-logout" style="display: none;" onclick="window.authManager.signOut()">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+                <!-- User Avatar (Hidden by default) -->
+                <div id="userMenu" style="display:none; align-items:center; gap:5px;">
+                    <img id="userAvatar" src=""
+                        style="width:32px; height:32px; border-radius:50%; border:2px solid #fff;">
+                </div>
+            </div>
         </div>
     </header>
 
-    <main class="video-stage">
-        <div class="video-container local-video">
-            <video id="localVideo" autoplay muted playsinline></video>
-            <div class="local-overlay">
-                <div class="overlay-content">
-                    <i class="fa-solid fa-video"></i>
-                    <p>Deine Kamera</p>
-                </div>
-            </div>
-        </div>
-        <div class="video-container remote-video">
-            <video id="remoteVideo" autoplay playsinline></video>
-            <div class="remote-loader idle">
-                <div class="loader-content">
-                    <div class="spinner"></div>
-                    <p class="search-text">Klicke auf Weiter für die nächste Person</p>
+    <main class="chat-container">
+        <div class="video-grid">
+            <!-- Local Video (Left) -->
+            <div class="video-wrapper">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div class="video-label local">Du</div>
+
+                <!-- Mute Overlay -->
+                <div class="local-overlay">
+                    <div class="overlay-content">
+                        <i class="fa-solid fa-video-slash"></i>
+                        <p>Kamera aus</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Report Button -->
-            <button id="btnReport" class="btn-report-overlay" title="Melden">
-                <i class="fas fa-flag"></i>
-            </button>
+            <!-- Remote Video (Right) -->
+            <div class="video-wrapper">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div class="video-label remote">Partner</div>
+
+                <!-- Waiting Overlay -->
+                <div class="remote-loader idle">
+                    <div class="loader-content liquid-glass-pink">
+                        <div class="spinner"></div>
+                        <p class="search-text">Klicke auf Weiter</p>
+                    </div>
+                </div>
+
+                <!-- Report Button -->
+                <button id="btnReport" class="btn-report-overlay" title="Melden" onclick="window.openReportModal()">
+                    <i class="fas fa-flag"></i>
+                </button>
+            </div>
         </div>
     </main>
 
     <section class="controls-bar">
-        <div class="control-group start-stop">
-            <button class="btn-control btn-start" id="btnNext"> <!-- btn-start visual style, acts as next/start -->
-                <i class="fa-solid fa-play"></i>
-                <span class="btn-text">
-                    <span class="big-text">Start</span>
-                </span>
-            </button>
-            <button class="btn-control btn-stop" id="btnStop" disabled>
+        <div class="control-group">
+            <button class="btn-control btn-stop liquid-glass-pink" id="btnStop" disabled>
                 <i class="fa-solid fa-stop"></i>
-                <span class="btn-text">
-                    <span class="big-text">Stopp</span>
-                </span>
+                <span class="btn-text">STOPP</span>
+            </button>
+            <button class="btn-control btn-next liquid-glass-pink" id="btnNext">
+                <i class="fa-solid fa-forward"></i>
+                <span class="btn-text">WEITER</span>
             </button>
         </div>
 
         <div class="disclaimer-text">
-            Durch Klicken auf "Start" akzeptieren Sie die <a href="#">Regeln</a>.<br>
-            Verstöße führen zur Sperrung.
+            <span>Regeln akzeptieren mit "Weiter".</span>
+            <span>Verstöße führen zur Sperrung.</span>
         </div>
     </section>
 
     <footer class="chat-footer">
-        <div class="chat-input-container">
+        <div class="chat-input-container liquid-glass-pink-inset">
             <input type="text" placeholder="Schreibe eine Nachricht..." class="chat-input" id="chatInput">
-            <button class="emoji-btn" id="btnEmoji">😊</button>
             <button class="send-btn" id="btnSend"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </footer>
 
-    <!-- Country Selection Modal -->
-    <div id="countryModal" class="modal">
-        <div class="modal-content">
-            <h2>Land auswählen</h2>
-            <div class="country-list">
-                <div class="country-option" data-country="DE">
-                    <img src="https://flagsapi.com/DE/flat/64.png" alt="Germany"> Deutschland
-                </div>
-                <div class="country-option" data-country="US">
-                    <img src="https://flagsapi.com/US/flat/64.png" alt="USA"> USA
-                </div>
-                <div class="country-option" data-country="GB">
-                    <img src="https://flagsapi.com/GB/flat/64.png" alt="UK"> Vereinigtes Königreich
-                </div>
-                <div class="country-option" data-country="FR">
-                    <img src="https://flagsapi.com/FR/flat/64.png" alt="France"> Frankreich
-                </div>
-                <div class="country-option" data-country="ES">
-                    <img src="https://flagsapi.com/ES/flat/64.png" alt="Spain"> Spanien
-                </div>
-            </div>
-            <button class="close-modal">Schließen</button>
-        </div>
-    </div>
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content liquid-glass-pink" style="border: 2px solid red; box-shadow: 0 0 30px red;">
+            <span class="close-report-modal" onclick="closeReportModal()">&times;</span>
+            <h2 style="color: red;"><i class="fas fa-exclamation-triangle"></i> Melden</h2>
 
-    <!-- Gender Selection Modal -->
-    <div id="genderModal" class="modal">
-        <div class="modal-content">
-            <h2>Geschlecht auswählen</h2>
-            <div class="gender-list">
-                <div class="gender-option" data-gender="male">
-                    <i class="fa-solid fa-mars"></i> Männlich
-                </div>
-                <div class="gender-option" data-gender="female">
-                    <i class="fa-solid fa-venus"></i> Weiblich
-                </div>
-                <div class="gender-option" data-gender="other">
-                    <i class="fa-solid fa-user"></i> Andere
-                </div>
+            <div style="margin: 20px 0;">
+                <img id="reportScreenshot" src="" style="max-width: 100%; border-radius: 8px; border: 1px solid #fff;">
             </div>
-            <button class="close-modal">Schließen</button>
+
+            <p>Benutzer wegen Fehlverhalten melden?</p>
+            <button id="btnConfirmReport" class="btn-control liquid-glass-pink"
+                style="background: rgba(255,0,0,0.3); border-color: red; margin-top: 15px;">
+                MELDEN ABSENDEN
+            </button>
         </div>
     </div>
 
     <!-- Ban Modal -->
-    <div id="banModal" class="modal" style="z-index: 9999;">
-        <div class="modal-content" style="max-width: 400px; text-align: center;">
-            <div style="font-size: 50px; color: #dc3545; margin-bottom: 15px;">
-                <i class="fa-solid fa-circle-exclamation"></i>
+    <div id="banModal" class="modal">
+        <div class="modal-content liquid-glass-pink" style="border-color: red;">
+            <h2 style="color: red;">GESPERRT</h2>
+            <div id="ban-info">
+                <p>Grund: <span id="ban-reason-text">-</span></p>
+                <p>Dauer: <span id="ban-duration-text">-</span></p>
             </div>
-            <h2 style="color: #dc3545; margin-top: 0;">ACCOUNT GESPERRT</h2>
-
-            <div id="ban-info"
-                style="text-align: left; background: #fff5f5; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #fed7d7;">
-                <p style="color: #721c24; margin: 5px 0;"><strong>Grund:</strong> <span id="ban-reason-text">-</span>
-                </p>
-                <p id="ban-duration-row" style="color: #721c24; margin: 5px 0;"><strong>Dauer:</strong> <span
-                        id="ban-duration-text">-</span></p>
+            <div id="ban-evidence-container">
+                <img id="ban-evidence-img" src="" style="width: 100%; border-radius: 8px; margin-top: 10px;">
             </div>
-
-            <div id="ban-evidence-container" style="display: none; margin-bottom: 20px;">
-                <p style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">BEWEIS DER MELDUNG:</p>
-                <img id="ban-evidence-img" src=""
-                    style="width: 100%; border-radius: 8px; border: 2px solid #dc3545; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            </div>
-
-            <p style="font-size: 13px; color: #666; margin-bottom: 20px;">Falls du Fragen zu deiner Sperrung hast, wende
-                dich bitte an den Support.</p>
-
-            <button class="btn-start" onclick="location.reload()" style="width: 100%; background: #666;">Seite neu
+            <button onclick="location.reload()" class="btn-control liquid-glass-pink" style="margin-top: 20px;">Neu
                 laden</button>
         </div>
     </div>
 
-    <!-- Report Modal -->
-    <div id="reportModal" class="modal" style="align-items: flex-start; padding-top: 50px;">
-        <div class="modal-content report-content" style="max-height: 85vh; overflow-y: auto;">
-            <span class="close-report-modal" onclick="closeReportModal()">&times;</span>
-            <h2><i class="fas fa-exclamation-triangle"></i> Missbrauch melden</h2>
-
-            <div class="report-preview" style="text-align: center;">
-                <img id="reportScreenshot" src="" alt="Screenshot Beweis"
-                    style="width: auto; max-width: 100%; max-height: 250px; border-radius: 8px; margin-bottom: 15px; display: none; object-fit: contain;">
-            </div>
-
-            <p>Wollen Sie diesen Benutzer wirklich wegen unangemessenem Verhalten melden?</p>
-            <p class="small-text" style="font-size: 0.8rem; color: #888; margin-top: 5px;">Ein Screenshot des aktuellen
-                Videobilds wird automatisch angehängt.</p>
-
-            <div class="modal-buttons" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
-                <button class="btn-cancel-report" onclick="closeReportModal()"
-                    style="padding: 10px 20px; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; cursor: pointer;">Abbrechen</button>
-                <button id="btnConfirmReport"
-                    style="padding: 10px 20px; border-radius: 5px; border: none; background: #dc3545; color: white; cursor: pointer;">Melden</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
-    <script src="config.js?v=74"></script>
-    <script src="auth.js?v=74"></script>
-    <script src="user-management.js?v=74"></script>
-    <script src="swipe.js?v=74"></script>
-    <script src="webrtc.js?v=74"></script>
-    <script src="script.js?v=74"></script>
-    <script src="report.js?v=74"></script>
+    <script src="config.js?v=75"></script>
+    <script src="auth.js?v=75"></script>
+    <script src="user-management.js?v=75"></script>
+    <script src="swipe.js?v=75"></script>
+    <script src="webrtc.js?v=75"></script>
+    <script src="script.js?v=75"></script>
+    <script src="report.js?v=75"></script>
 </body>
 
 </html>

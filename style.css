@@ -10,75 +10,98 @@
 :root {
     --bg-black: #000000;
     --neon-pink: #ff00cc;
+    --neon-pink-soft: rgba(255, 0, 204, 0.3);
     --text-white: #ffffff;
 }
 
 body {
     background-color: var(--bg-black);
     color: var(--text-white);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
     height: 100vh;
     height: 100dvh;
     width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+
+    /* Subtle Background Tint */
+    background: radial-gradient(circle at 50% -20%, #1a0510, #000 60%);
 }
 
-/* HEADER */
+/* --- LIQUID GLASS UTILITY CLASS --- */
+/* The core visual style requested */
+.liquid-glass-pink {
+    background: rgba(255, 255, 255, 0.03);
+    /* Barely visible surface */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+
+    /* The Soft Pink Glow */
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(255, 0, 204, 0.1);
+    /* Soft Bloom */
+
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.liquid-glass-pink:hover {
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(255, 0, 204, 0.25);
+    /* Stronger Bloom */
+    border-color: rgba(255, 0, 204, 0.3);
+    transform: translateY(-1px);
+}
+
+/* --- HEADER --- */
 .main-header {
-    height: 60px;
-    min-height: 60px;
-    background: #000;
-    border-bottom: 2px solid var(--neon-pink);
+    height: 70px;
+    min-height: 70px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 25px;
     z-index: 100;
 }
 
 .logo-container {
-    font-weight: 800;
-    font-size: 1.4rem;
+    font-weight: 900;
+    font-size: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 8px;
-    letter-spacing: -0.5px;
+    gap: 10px;
+    text-transform: lowercase;
+    letter-spacing: -1px;
 }
 
 .logo-icon {
-    color: var(--neon-pink);
-    font-size: 1.6rem;
+    color: #fff;
+    text-shadow: 0 0 10px var(--neon-pink);
 }
 
-.main-nav,
-.auth-buttons {
+.header-right {
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-.btn-login {
-    background: #fff;
-    color: #000;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
+/* Header Items as Glass Pills */
 .online-counter {
-    background: #111;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    border: 1px solid #333;
-    color: #aaa;
+    padding: 8px 16px;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 30px;
+    /* Pill shape */
 }
 
 .pulse-dot {
@@ -86,54 +109,63 @@ body {
     height: 8px;
     background: #0f0;
     border-radius: 50%;
-    box-shadow: 0 0 5px #0f0;
+    box-shadow: 0 0 8px #0f0;
 }
 
-/* CHAT AREA */
+.btn-login {
+    padding: 8px 20px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 30px;
+}
+
+
+/* --- CHAT AREA --- */
 .chat-container {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #000;
     overflow: hidden;
     position: relative;
 }
 
-/* VIDEO GRID */
+/* VIDEO GRID - Side by Side */
 .video-grid {
     flex: 1;
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    /* Always side by side as per screenshot request */
     gap: 0;
     background: #000;
 }
 
-@media (min-width: 768px) {
+/* On very small screens, stack them? User said "Side by Side" like in picture. 
+   Picture was desktop. I keep side-by-side but with media query for tiny screens if needed. 
+   Let's trust side-by-side for now. */
+@media (max-width: 600px) {
     .video-grid {
-        grid-template-rows: none;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
     }
 }
 
 .video-wrapper {
     position: relative;
-    background: #000;
+    background: #050505;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    /* Subtle separator */
 }
 
-/* Separator */
-.video-wrapper:first-child {
-    border-bottom: 2px solid var(--neon-pink);
-}
-
-@media (min-width: 768px) {
-    .video-wrapper:first-child {
-        border-bottom: none;
-        border-right: 2px solid var(--neon-pink);
-    }
+.video-wrapper:last-child {
+    border-right: none;
 }
 
 video {
@@ -142,7 +174,20 @@ video {
     object-fit: cover;
 }
 
+.video-label {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #aaa;
+    pointer-events: none;
+}
+
 /* OVERLAYS */
+/* Remote Loader Box */
 .remote-loader {
     position: absolute;
     top: 0;
@@ -163,31 +208,31 @@ video {
 }
 
 .loader-content {
-    background: rgba(0, 0, 0, 0.9);
-    padding: 30px;
-    border-radius: 12px;
-    border: 1px solid var(--neon-pink);
-    box-shadow: 0 0 30px rgba(255, 0, 204, 0.2);
-    text-align: center;
+    /* Uses .liquid-glass-pink class */
+    padding: 40px;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .search-text {
-    color: var(--neon-pink);
-    font-weight: 700;
     font-size: 1.2rem;
-    margin-top: 15px;
+    font-weight: 700;
+    margin-top: 20px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 0 10px var(--neon-pink);
 }
 
 .spinner {
     width: 50px;
     height: 50px;
-    border: 4px solid #333;
-    border-top-color: var(--neon-pink);
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #fff;
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto;
+    box-shadow: 0 0 15px var(--neon-pink);
 }
 
 @keyframes spin {
@@ -200,19 +245,18 @@ video {
     position: absolute;
     top: 15px;
     right: 15px;
-    width: 44px;
-    height: 44px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid #555;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
     cursor: pointer;
-    z-index: 50;
     pointer-events: auto;
+    z-index: 50;
     transition: 0.2s;
 }
 
@@ -221,19 +265,19 @@ video {
     border-color: #ff3333;
 }
 
-/* CONTROLS BAR - Layout like Screenshot */
+
+/* --- CONTROLS BAR --- */
 .controls-bar {
     min-height: 140px;
-    /* Generous height */
-    background: #000;
-    border-top: 2px solid var(--neon-pink);
+    padding: 20px 40px;
     display: flex;
     align-items: center;
-    padding: 10px 40px;
-    /* Indentation */
-    gap: 30px;
+    gap: 40px;
     z-index: 50;
-    flex-wrap: wrap;
+    /* Soft top glow instead of border */
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+    background: #000;
+    /* Or gradient? User said black */
 }
 
 .control-group {
@@ -241,103 +285,81 @@ video {
     gap: 20px;
 }
 
-/* BUTTONS - LIQUID GLASS & BIG SQUARES */
+/* BIG BUTTONS */
 .btn-control {
-    width: 140px;
-    height: 100px;
-    /* Big rectangular buttons */
-    /* Liquid Glass Pink Style */
-    background: rgba(255, 0, 204, 0.05);
-    border: 1px solid rgba(255, 0, 204, 0.3);
-    border-radius: 12px;
-    color: #fff;
+    width: 150px;
+    height: 110px;
+    /* .liquid-glass-pink base applied in HTML */
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(5px);
-}
-
-.btn-start {
-    /* Blue/Greenish tint as "Start/Next" but keeping Pink theme */
-    background: rgba(0, 243, 255, 0.1);
-    border-color: #00f3ff;
-    color: #00f3ff;
-}
-
-.btn-start:hover {
-    background: rgba(0, 243, 255, 0.2);
-    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
-    transform: translateY(-2px);
+    gap: 10px;
 }
 
 .btn-stop {
-    /* Red/Pinkish tint */
-    background: rgba(255, 51, 51, 0.1);
-    border-color: #ff3333;
-    color: #ff3333;
+    color: #ff5555;
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
 }
 
-.btn-stop:hover {
-    background: rgba(255, 51, 51, 0.2);
-    box-shadow: 0 0 20px rgba(255, 51, 51, 0.4);
-    transform: translateY(-2px);
+.btn-next {
+    color: #55ffff;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
 }
 
+/* Icons */
 .btn-control i {
-    font-size: 2rem;
-    margin-bottom: 8px;
+    font-size: 2.5rem;
+    transition: 0.3s;
 }
 
-.big-text {
-    font-size: 1.2rem;
-    font-weight: 700;
-    text-transform: uppercase;
+.btn-control:hover i {
+    transform: scale(1.1);
+    filter: brightness(1.2);
 }
 
-/* DISCLAIMER */
+.btn-text {
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+/* Disclaimer Text */
 .disclaimer-text {
-    color: #666;
+    flex: 1;
+    /* Take remaining space */
+    color: rgba(255, 255, 255, 0.4);
     font-size: 0.9rem;
-    line-height: 1.5;
-    max-width: 450px;
-}
-
-.disclaimer-text a {
-    color: var(--neon-pink);
-    text-decoration: none;
-    border-bottom: 1px dotted var(--neon-pink);
-}
-
-/* CHAT FOOTER */
-.chat-footer {
-    height: 70px;
-    background: #000;
-    border-top: 1px solid #222;
-    padding: 0 20px;
+    line-height: 1.6;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+}
+
+
+/* --- FOOTER --- */
+.chat-footer {
+    padding: 15px 40px 30px 40px;
+    /* More padding at bottom */
+    background: #000;
 }
 
 .chat-input-container {
     width: 100%;
     height: 50px;
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 8px;
-    /* Slightly rounded, not pill */
+    /* Inset Glass */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    padding: 0 15px;
-    transition: 0.2s;
+    padding: 0 20px;
+    transition: 0.3s;
 }
 
-.chat-input-container:focus-within {
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 10px rgba(255, 0, 204, 0.2);
+.liquid-glass-pink-inset:focus-within {
+    border-color: rgba(255, 0, 204, 0.5);
+    box-shadow: 0 0 15px rgba(255, 0, 204, 0.15);
 }
 
 .chat-input {
@@ -346,21 +368,16 @@ video {
     border: none;
     color: #fff;
     font-size: 1rem;
-    height: 100%;
 }
 
-.emoji-btn,
 .send-btn {
     background: none;
     border: none;
     color: #666;
-    font-size: 1.4rem;
-    margin-left: 10px;
+    font-size: 1.2rem;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.emoji-btn:hover,
 .send-btn:hover {
     color: var(--neon-pink);
 }
@@ -380,11 +397,10 @@ video {
 }
 
 .modal-content {
-    background: #111;
-    border: 1px solid var(--neon-pink);
-    color: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    width: 400px;
+    background: #000;
+    /* Glass backdrop handled by class */
+    padding: 40px;
+    width: 450px;
+    max-width: 90%;
     text-align: center;
 }
