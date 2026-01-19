@@ -1,6 +1,6 @@
 {
     "name": "siagechat",
-    "version": "1.0.0",
+    "version": "1.0.101",
     "description": "Random video chat application with Google authentication",
     "scripts": {
         "dev": "npx serve .",
