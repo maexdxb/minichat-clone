@@ -9,29 +9,50 @@ class AuthManager {
     // Initialize Supabase client
     async init() {
         try {
-            // Check if config is set
-            if (!SUPABASE_CONFIG.url || SUPABASE_CONFIG.url === 'YOUR_SUPABASE_URL') {
-                console.warn('⚠️ Supabase not configured. Please update config.js with your credentials.');
-                this.useMockAuth();
+            console.log('🔐 Initializing AuthManager...');
+
+            // Check config integrity
+            if (typeof SUPABASE_CONFIG === 'undefined' || !SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) {
+                console.error('❌ Supabase config missing in config.js');
+                alert('Konfigurationsfehler: Supabase URL/Key fehlt in config.js');
                 return;
             }
 
-            // Initialize Supabase client
+            if (SUPABASE_CONFIG.anonKey.startsWith('sb_publishable')) {
+                console.warn('⚠️ Warning: The provided Anon Key looks like a Publishable Key, not a JWT. This might fail.');
+            }
+
+            // Check if global supabase object exists (from CDN)
+            if (typeof supabase === 'undefined') {
+                console.error('❌ Supabase SDK not loaded. Check script tags.');
+                alert('Systemfehler: Supabase SDK konnte nicht geladen werden.');
+                return;
+            }
+
+            // Initialize
             const { createClient } = supabase;
             this.supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
 
-            // Check for existing session
-            const { data: { session } } = await this.supabase.auth.getSession();
+            // Check session
+            const { data: { session }, error } = await this.supabase.auth.getSession();
+
+            if (error) {
+                console.error('⚠️ Error checking session:', error);
+                // Don't fail hard on session check, maybe just network
+            }
 
             if (session) {
+                console.log('✅ User already logged in:', session.user.email);
                 this.currentUser = session.user;
                 this.updateUIForLoggedInUser();
                 this.startHeartbeat();
+            } else {
+                console.log('ℹ️ No active session.');
             }
 
-            // Listen for auth state changes
+            // Listen for auth changes
             this.supabase.auth.onAuthStateChange((event, session) => {
-                console.log('Auth state changed:', event);
+                console.log('🔄 Auth state changed:', event);
 
                 if (session) {
                     this.currentUser = session.user;
@@ -44,227 +65,110 @@ class AuthManager {
             });
 
             this.initialized = true;
-            console.log('✅ Supabase initialized successfully');
 
         } catch (error) {
-            console.error('❌ Error initializing Supabase:', error);
-            this.useMockAuth();
+            console.error('❌ Critical Auth Error:', error);
+            alert('Authentifizierungs-Fehler: ' + error.message);
         }
-    }
-
-    // Mock authentication for demo purposes
-    useMockAuth() {
-        console.log('🎭 Using mock authentication (Supabase not configured)');
-        this.initialized = true;
     }
 
     // Sign in with Google
     async signInWithGoogle() {
-        try {
-            if (!this.supabase) {
-                // Mock login for demo
-                this.mockLogin();
-                return;
-            }
+        console.log('👉 signInWithGoogle called');
 
+        if (!this.supabase) {
+            alert('Fehler: Verbindung zur Datenbank nicht hergestellt. Bitte Seite neu laden.');
+            return;
+        }
+
+        try {
             const { data, error } = await this.supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin
+                    redirectTo: window.location.origin,
+                    queryParams: {
+                        access_type: 'offline',
+                        prompt: 'consent'
+                    }
                 }
             });
 
             if (error) throw error;
-
-            console.log('✅ Google sign-in initiated');
+            console.log('🚀 Redirecting to Google Login...', data);
 
         } catch (error) {
-            console.error('❌ Error signing in with Google:', error);
-            alert('Fehler beim Anmelden mit Google: ' + error.message);
+            console.error('❌ Google Sign-In Error:', error);
+            alert('Google Login fehlgeschlagen: ' + error.message);
         }
-    }
-
-    // Mock login for demo
-    mockLogin() {
-        const mockUser = {
-            id: 'mock-user-' + Date.now(),
-            email: 'demo@example.com',
-            user_metadata: {
-                full_name: 'Demo User',
-                avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo'
-            }
-        };
-
-        this.currentUser = mockUser;
-        this.updateUIForLoggedInUser();
-
-        // Store in localStorage for persistence
-        localStorage.setItem('mockUser', JSON.stringify(mockUser));
-
-        alert('✅ Demo-Login erfolgreich!\n\nHinweis: Dies ist ein Mock-Login. Konfiguriere Supabase in config.js für echte Google-Authentifizierung.');
     }
 
     // Sign out
     async signOut() {
+        if (!this.supabase) return;
+
         try {
-            if (this.supabase) {
-                const { error } = await this.supabase.auth.signOut();
-                if (error) throw error;
-            } else {
-                // Mock logout
-                localStorage.removeItem('mockUser');
-            }
-
-            this.currentUser = null;
-            this.updateUIForLoggedOutUser();
-
-            console.log('✅ Signed out successfully');
-
+            const { error } = await this.supabase.auth.signOut();
+            if (error) throw error;
+            console.log('👋 Signed out successfully');
+            // UI update handled by onAuthStateChange
         } catch (error) {
-            console.error('❌ Error signing out:', error);
-            alert('Fehler beim Abmelden: ' + error.message);
+            console.error('Error signing out:', error);
+            alert('Abmelden fehlgeschlagen.');
         }
-    }
-
-    // Update UI for logged in user
-    updateUIForLoggedInUser() {
-        const btnLogin = document.querySelector('.btn-login');
-        const headerRight = document.querySelector('.header-right');
-
-        if (!btnLogin || !headerRight) return;
-
-        // Get user info
-        const userName = this.currentUser.user_metadata?.full_name ||
-            this.currentUser.email?.split('@')[0] ||
-            'User';
-        const avatarUrl = this.currentUser.user_metadata?.avatar_url ||
-            `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.currentUser.id}`;
-
-        // Preserve online counter
-        const onlineCounter = headerRight.querySelector('.online-counter');
-
-        // Replace login button with user menu
-        headerRight.innerHTML = `
-            <div class="user-menu">
-                <img src="${avatarUrl}" alt="${userName}" class="user-avatar">
-                <span class="user-name">${userName}</span>
-                <button class="btn-logout" title="Abmelden">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-            </div>
-        `;
-
-        // Re-add online counter
-        if (onlineCounter) {
-            headerRight.insertBefore(onlineCounter, headerRight.firstChild);
-        }
-
-        // Add logout event listener
-        const btnLogout = document.querySelector('.btn-logout');
-        if (btnLogout) {
-            btnLogout.addEventListener('click', () => this.signOut());
-        }
-
-        // Show notification
-        showNotification(`Willkommen zurück, ${userName}! 👋`);
-
-        // Auto-start removed as per user request
-        // if (typeof startChat === 'function') {
-        //     console.log('🚀 Auto-starting chat for logged-in user...');
-        //     setTimeout(() => startChat(), 500);
-        // }
-    }
-
-    // Update UI for logged out user
-    updateUIForLoggedOutUser() {
-        const headerRight = document.querySelector('.header-right');
-
-        if (!headerRight) return;
-
-        // Preserve online counter
-        const onlineCounter = headerRight.querySelector('.online-counter');
-
-        headerRight.innerHTML = `
-            <button class="btn-login"><i class="fa-solid fa-user"></i> Mit Google anmelden</button>
-        `;
-
-        // Re-add online counter
-        if (onlineCounter) {
-            headerRight.insertBefore(onlineCounter, headerRight.firstChild);
-        }
-
-        // Re-attach event listeners
-
-        const btnLogin = document.querySelector('.btn-login');
-        if (btnLogin) {
-            btnLogin.addEventListener('click', () => this.signInWithGoogle());
-        }
-    }
-
-    // Get current user
-    getCurrentUser() {
-        return this.currentUser;
     }
 
     // Check if user is logged in
     isLoggedIn() {
-        return this.currentUser !== null;
+        return !!this.currentUser;
     }
 
-    // Check for mock user on page load
-    checkMockUser() {
-        const mockUser = localStorage.getItem('mockUser');
-        if (mockUser && !this.currentUser) {
-            this.currentUser = JSON.parse(mockUser);
-            this.updateUIForLoggedInUser();
-        }
-    }
+    // UI Updates
+    updateUIForLoggedInUser() {
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+        const userMenu = document.getElementById('userMenu');
+        const userAvatar = document.getElementById('userAvatar');
 
-    // Sync user to database for admin panel
-    async syncUserToDB(user) {
-        if (!user || !this.supabase) return;
+        if (btnLogin) btnLogin.style.display = 'none';
+        if (btnLogout) btnLogout.style.display = 'flex'; // Show logout icon
 
-        try {
-            const updates = {
-                user_id: user.id,
-                email: user.email,
-                display_name: user.user_metadata?.full_name || user.email,
-                last_seen: new Date().toISOString(), // Update last seen
-                updated_at: new Date().toISOString()
-            };
-
-            const { error } = await this.supabase
-                .from('user_management')
-                .upsert(updates, { onConflict: 'user_id' });
-
-            if (error) {
-                console.error('❌ Sync to DB failed:', error.message);
-                if (error.code === '42501' || error.message.includes('row-level security')) {
-                    console.warn('⚠️ RLS Policy Error: Please run FIX-DB.md');
-                }
-            } else {
-                console.log('✅ User synced to DB (Heartbeat)');
+        if (userMenu && this.currentUser) {
+            userMenu.style.display = 'flex';
+            if (userAvatar) {
+                userAvatar.src = this.currentUser.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
             }
-        } catch (err) {
-            console.error('Sync error:', err);
         }
     }
 
-    // Start heartbeat to update online status
+    updateUIForLoggedOutUser() {
+        const btnLogin = document.getElementById('btnLogin');
+        const btnLogout = document.getElementById('btnLogout');
+        const userMenu = document.getElementById('userMenu');
+
+        if (btnLogin) btnLogin.style.display = 'flex';
+        if (btnLogout) btnLogout.style.display = 'none';
+        if (userMenu) userMenu.style.display = 'none';
+    }
+
+    // Heartbeat to keep presence alive (if needed for online count)
     startHeartbeat() {
+        // Optional: Update 'last_seen' in DB
         if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
 
-        // Initial sync
-        if (this.currentUser) this.syncUserToDB(this.currentUser);
-
-        // Sync every 60 seconds
-        this.heartbeatInterval = setInterval(() => {
-            if (this.currentUser) {
-                this.syncUserToDB(this.currentUser);
-            }
+        this.heartbeatInterval = setInterval(async () => {
+            if (!this.currentUser) return;
+            // Implementation depends on DB structure (e.g. updating a 'users' table)
         }, 60000);
     }
 }
 
-// Create global auth manager instance
-window.authManager = new AuthManager();
+// Initialize and export
+const authManager = new AuthManager();
+window.authManager = authManager;
+
+// Init when DOM is ready (or immediately if deferred)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => authManager.init());
+} else {
+    authManager.init();
+}
