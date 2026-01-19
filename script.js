@@ -318,8 +318,17 @@ async function startChat() {
             gender: selectedGender
         };
 
-        console.log('🔍 Finding partner with data:', userData);
-        webrtcManager.findPartner(userData);
+        console.log('🔍 Waiting for user to start search...');
+        // webrtcManager.findPartner(userData); // Removed auto-search
+
+        // Update UI
+        const searchText = document.querySelector('.search-text');
+        if (searchText) searchText.textContent = 'Klicke "Weiter" zum Starten';
+
+        const spinner = document.querySelector('.spinner');
+        if (spinner) spinner.style.display = 'none';
+
+        showNotification('Kamera aktiv! Klicke "Weiter" zum Starten.');
 
     } catch (error) {
         console.error('❌ Error starting chat:', error);
@@ -441,6 +450,9 @@ function skipPartner() {
     if (searchText) {
         searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
     }
+
+    const spinner = document.querySelector('.spinner');
+    if (spinner) spinner.style.display = 'block';
 
     showNotification('Suche neuen Partner... 🔍');
 
