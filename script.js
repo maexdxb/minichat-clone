@@ -1,107 +1,80 @@
-// Siagechat - Main Application Script with WebRTC
-// State management
+// Siagechat - Main Application Script with WebRTC v85
+
+// Global State
 let isActive = false;
 let isGuest = false;
+
+// CRITICAL: Initialize Manager immediately if possible
 let webrtcManager = null;
+
+try {
+    if (typeof WebRTCManager !== 'undefined' && typeof SIAGECHAT_CONFIG !== 'undefined') {
+        console.log('🏗️ Instantiating WebRTCManager early...');
+        webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
+        window.webrtcManager = webrtcManager;
+    } else {
+        console.error('❌ WebRTCManager or Config missing at global scope!');
+    }
+} catch (e) {
+    console.error('❌ Error instantiating WebRTCManager:', e);
+}
+
 let selectedCountry = 'DE';
 let selectedGender = 'male';
 
-// DOM Elements - will be initialized in DOMContentLoaded
+// DOM Elements
 let stopButtons = [];
 let nextButtons = [];
 let btnGuest;
-let btnNext; // Single next button reference
+let btnNext;
 let localVideo, remoteVideo, localOverlay, remoteLoader;
 let chatInput, chatMessages, btnSend;
 let countryModal, genderModal, countryBtn, genderBtn, onlineCount;
-let userManagement; // Add global userManagement instance
+let userManagement;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 DOM Content Loaded - Initializing...');
+    console.log('🚀 DOM Content Loaded - Initializing v85...');
 
-    // NOW select DOM elements
+    // Select DOM elements
     stopButtons = document.querySelectorAll('.btn-stop, #btnStop');
     nextButtons = document.querySelectorAll('.btn-next, #btnNext');
-    btnNext = document.querySelector('.btn-next, #btnNext'); // Single next button
-    btnGuest = document.querySelector('.btn-guest');
     localVideo = document.getElementById('localVideo');
     remoteVideo = document.getElementById('remoteVideo');
     localOverlay = document.querySelector('.local-overlay');
-    // Fallback for remote loader class mismatch
     remoteLoader = document.querySelector('.remote-loader') || document.querySelector('.video-overlay');
     chatInput = document.getElementById('chatInput');
-    countryModal = document.getElementById('countryModal');
-    genderModal = document.getElementById('genderModal');
-    countryBtn = document.querySelector('.country');
-    genderBtn = document.querySelector('.gender');
     onlineCount = document.getElementById('onlineCount');
     chatMessages = document.getElementById('chatMessages');
     btnSend = document.getElementById('btnSend');
 
-    // Validate critical elements
-    console.log('DOM Elements check:');
-    console.log('localVideo:', localVideo);
-    console.log('remoteVideo:', remoteVideo);
-    console.log('localOverlay:', localOverlay);
-    console.log('remoteLoader:', remoteLoader);
-    console.log('btnStop count:', stopButtons.length);
-    console.log('btnNext count:', nextButtons.length);
+    // Init Auth
+    if (window.authManager) await authManager.init();
 
-    if (!localVideo || !remoteVideo || !localOverlay || !remoteLoader) {
-        console.error('❌ Critical DOM elements missing!');
-        const missing = [];
-        if (!localVideo) missing.push('localVideo');
-        if (!remoteVideo) missing.push('remoteVideo');
-        if (!localOverlay) missing.push('localOverlay');
-        if (!remoteLoader) missing.push('remoteLoader');
-
-        console.error('Missing elements:', missing);
-        alert('Fehler: Kritische Elemente fehlen (' + missing.join(', ') + '). Bitte Cache leeren und Seite neu laden.');
+    // Check critical elements
+    if (!localVideo || !remoteVideo) {
+        alert('CRITICAL ERROR: Video elements not found!');
         return;
     }
 
-    // Setup Event Listeners IMMEDIATELY so buttons work even if network hangs
-    setupEventListeners();
-    setupSwipeGestures();
-    animateOnlineCount();
-
-    console.log('✅ All critical DOM elements found');
-    // Initialize authentication
-    await authManager.init();
-    authManager.checkMockUser();
-
-    // Initialize User Management
-    if (authManager.supabase) {
-        userManagement = new UserManagement(authManager.supabase);
+    // Initialize WebRTC Manager (if not already)
+    if (!webrtcManager) {
+        console.log('⚠️ WebRTCManager was null, trying to create again...');
+        try {
+            webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
+            window.webrtcManager = webrtcManager;
+        } catch (e) {
+            alert('FATAL: Could not create WebRTC Manager: ' + e.message);
+            return;
+        }
     }
 
-    // Initialize WebRTC Manager (with timeout)
     try {
-        webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
-        window.webrtcManager = webrtcManager; // Global Access
+        // Init Connection
+        console.log('🔌 Connecting WebRTC Manager...');
+        await webrtcManager.init();
 
-        // SAFETY NET: Force enable button after 3s if init hangs
-        setTimeout(() => {
-            const mBtn = document.getElementById('mobileStartBtn');
-            if (mBtn && mBtn.disabled) {
-                console.warn('⚠️ Init took too long, force enabling button');
-                mBtn.disabled = false;
-                mBtn.textContent = "START";
-                mBtn.style.opacity = "1";
-            }
-        }, 3000);
-
-        // Race condition: Timeout after 3 seconds if server doesn't respond
-        const initPromise = webrtcManager.init();
-
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Connection timeout')), 3000)
-        );
-
-        await Promise.race([initPromise, timeoutPromise]);
-
-        console.log('✅ WebRTC Manager initialized');
+        console.log('✅ WebRTC Manager initialized & connected');
 
         // Enable Mobile Start Button
         const mobileBtn = document.getElementById('mobileStartBtn');
@@ -109,158 +82,81 @@ document.addEventListener('DOMContentLoaded', async () => {
             mobileBtn.disabled = false;
             mobileBtn.textContent = "START";
             mobileBtn.style.opacity = "1";
-            mobileBtn.removeAttribute('style'); // Reset inline opacity
         }
 
-        // Setup WebRTC callbacks
         setupWebRTCCallbacks();
+        setupEventListeners();
+        setupSwipeGestures();
+
+        // Check Ban (async)
+        performBanCheck();
 
     } catch (error) {
-        console.error('❌ Failed to initialize WebRTC:', error);
-        showNotification('⚠️ Verbindung wird im Hintergrund aufgebaut...');
-        // We still allow operation; socket might connect later
-        setupWebRTCCallbacks(); // Setup callbacks anyway just in case
+        console.error('❌ Initialization failed:', error);
+        alert('Verbindungsfehler: ' + error.message);
+
+        // Safety: Enable button anyway to try again
+        const mobileBtn = document.getElementById('mobileStartBtn');
+        if (mobileBtn) {
+            mobileBtn.disabled = false;
+            mobileBtn.textContent = "START (Rescue)";
+            mobileBtn.style.opacity = "1";
+        }
     }
 });
 
-// Setup WebRTC Callbacks
 function setupWebRTCCallbacks() {
-    // Partner found
+    if (!webrtcManager) return;
+
     webrtcManager.onPartnerFound = (partnerId) => {
-        console.log('🎉 Partner gefunden:', partnerId);
-        console.log('Current state - remoteLoader:', remoteLoader.style.display);
-        console.log('Current state - remoteVideo:', remoteVideo.style.display);
-
-        // Hide NO SIGNAL
-        const searchText = document.querySelector('.search-text');
-        if (searchText) {
-            searchText.textContent = 'VERBINDE...';
-        }
-
-        showNotification('Partner gefunden! Verbinde... 🎉');
+        console.log('🤝 Partner found:', partnerId);
+        updateUIState('connected');
+        if (window.swipeHandler) window.swipeHandler.enable();
     };
 
-    // Partner disconnected
     webrtcManager.onPartnerDisconnected = () => {
-        console.log('💔 Partner getrennt');
-        remoteVideo.srcObject = null;
-        remoteVideo.style.display = 'none';
-        remoteLoader.style.display = 'flex';
-
-        // Remove idle class - now searching
-        const remoteLoaderEl = document.querySelector('.remote-loader');
-        if (remoteLoaderEl) {
-            remoteLoaderEl.classList.remove('idle');
-        }
-
-        // Update loader text
-        const searchText = document.querySelector('.search-text');
-        if (searchText) {
-            searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
-        }
-
-        // Auto-search for new partner instead of showing "no partner"
-        showNotification('Partner hat getrennt. Klicke auf Weiter.');
-
-        // Removed auto-search as per user request
-        remoteLoader.style.display = 'none';
-
-        // Show Next Button prominence?
-        // nextButtons.forEach(btn => btn.classList.add('pulse'));
-
-
-        toggleReportButton(false);
+        console.log('👋 Partner left');
+        updateUIState('searching');
+        if (isActive) webrtcManager.startSearch();
     };
 
-    // Remote stream received
     webrtcManager.onRemoteStream = (stream) => {
-        console.log('📹 Remote Stream empfangen');
-
-        // Hide NO SIGNAL loader
-        remoteLoader.style.display = 'none';
-
-        // Show remote video
-        remoteVideo.srcObject = stream;
-        remoteVideo.style.display = 'block';
-        toggleReportButton(true);
-        // noPartner removed
-
-        console.log('✅ Remote video should now be visible');
-    };
-
-    // Searching for partner
-    webrtcManager.onSearching = () => {
-        console.log('🔍 Suche Partner...');
-        remoteLoader.style.display = 'flex';
-        remoteVideo.style.display = 'none';
-        // noPartner removed
-
-        // Remove idle class - now searching
-        const remoteLoaderEl = document.querySelector('.remote-loader');
-        if (remoteLoaderEl) {
-            remoteLoaderEl.classList.remove('idle');
+        console.log('📺 Received remote stream');
+        if (remoteVideo) {
+            remoteVideo.srcObject = stream;
+            // remoteVideo.play().catch(e => console.error('Auto-play failed', e));
         }
-
-        // Update loader text
-        const searchText = document.querySelector('.search-text');
-        if (searchText) {
-            searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
-        }
+        const loader = document.querySelector('.remote-loader');
+        if (loader) loader.style.display = 'none';
     };
 
-    // Chat message received
-    webrtcManager.onChatMessage = (message) => {
-        showNotification(`Partner: ${message}`);
+    webrtcManager.onChatMessage = (msg) => {
+        displayMessage(msg, 'partner');
     };
 
-    // Online count update
     webrtcManager.onOnlineCount = (count) => {
-        if (onlineCount) {
-            onlineCount.textContent = count.toLocaleString('de-DE');
-        }
+        if (onlineCount) onlineCount.textContent = count;
     };
 }
 
-// Event Listeners
 function setupEventListeners() {
-    console.log('🔌 Setting up event listeners...');
-
+    // Controls
     stopButtons.forEach(btn => btn.addEventListener('click', stopChat));
 
-    // Next button always works - starts chat if inactive, skips if active
-    if (btnNext) {
-        btnNext.addEventListener('click', skipPartner);
-        console.log('✅ Listener attached to btnNext');
+    nextButtons.forEach(btn => btn.addEventListener('click', () => {
+        if (!isActive) startChat();
+        else skipPartner();
+    }));
+
+    // Chat
+    if (btnSend) btnSend.addEventListener('click', sendMessage);
+    if (chatInput) {
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
     }
 
-    // Add listeners to ALL next buttons
-    nextButtons.forEach(btn => {
-        btn.addEventListener('click', skipPartner);
-    });
-
-    // Global click debugger
-    document.body.addEventListener('click', (e) => {
-        console.log('Body click target:', e.target.tagName, e.target.className);
-    });
-
-    // Initial button states
-    stopButtons.forEach(btn => {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-    });
-
-    // Next button is always enabled
-    nextButtons.forEach(btn => {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-    });
-
-    // Guest login (legacy check)
-    if (typeof btnGuest !== 'undefined' && btnGuest) {
-        btnGuest.addEventListener('click', () => continueAsGuest());
-    }
-
-    // Login button
+    // Login button (if present)
     const btnLogin = document.querySelector('.btn-login');
     if (btnLogin) {
         btnLogin.addEventListener('click', () => authManager.signInWithGoogle());
@@ -272,595 +168,155 @@ function setupEventListeners() {
         if (searchText) searchText.textContent = 'WISCHE FÜR WEITER';
     }
 
-    // Modal close buttons
+    // Modals
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', closeModals);
     });
 
-    // Country selection
-    document.querySelectorAll('.country-option').forEach(option => {
-        option.addEventListener('click', (e) => {
-            const country = e.currentTarget.dataset.country;
-            selectCountry(country);
-            closeModals();
-        });
-    });
-
-    // Gender selection
-    document.querySelectorAll('.gender-option').forEach(option => {
-        option.addEventListener('click', (e) => {
-            const gender = e.currentTarget.dataset.gender;
-            selectGender(gender);
-            closeModals();
-        });
-    });
-
-    // Chat input
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && isActive) {
-            sendMessage(chatInput.value);
-            chatInput.value = '';
-        }
-    });
-
-    // Close modals on outside click
-    window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
+    // modal outside click
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
             closeModals();
         }
-    });
-
-    // Retry button
-    document.querySelector('.btn-retry')?.addEventListener('click', findPartner);
+    };
 }
 
-// Continue as Guest
-function continueAsGuest() {
-    isGuest = true;
-    console.log('✅ Guest mode activated. isGuest:', isGuest);
+// ---------------- GLOBAL ACTIONS ----------------
 
-    // Update UI - preserve online counter
-    const headerRight = document.querySelector('.header-right');
-    const onlineCounter = headerRight.querySelector('.online-counter');
-    headerRight.innerHTML = `
-        <div class="user-menu">
-            <i class="fa-solid fa-user-secret" style="font-size: 1.5rem; color: #888;"></i>
-            <span class="user-name">Gast</span>
-        </div>
-    `;
-    // Re-add online counter at the beginning
-    if (onlineCounter) {
-        headerRight.insertBefore(onlineCounter, headerRight.firstChild);
-    }
+// Make startChat global and robust
+window.startChat = async function () {
+    console.log('▶️ START CHAT REQUESTED');
 
-    showNotification('Als Gast angemeldet! Starte Chat... 👋');
-
-    // Auto-start chat after 1 second (WORKING VERSION)
-    setTimeout(() => {
-        startChat();
-    }, 1000);
-}
-
-
-
-// Stop Chat
-function stopChat() {
-    if (!isActive) return;
-
-    console.log('🛑 Stopping chat...');
-
-    // Stop WebRTC
-    if (webrtcManager) {
-        webrtcManager.stop();
-    }
-
-    // Stop AND REMOVE local stream
-    if (localVideo.srcObject) {
-        const tracks = localVideo.srcObject.getTracks();
-        tracks.forEach(track => {
-            track.stop();
-            console.log('Stopped local track:', track.kind);
-        });
-        localVideo.srcObject = null;
-    }
-
-    // Stop remote stream
-    if (remoteVideo.srcObject) {
-        const tracks = remoteVideo.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-        remoteVideo.srcObject = null;
-    }
-
-    // Stop local stream in WebRTC manager too
-    if (webrtcManager) {
-        webrtcManager.stopLocalStream();
-    }
-
-    // Reset UI
-    localVideo.style.display = 'none';
-    remoteVideo.style.display = 'none';
-    localOverlay.style.display = 'flex';
-    remoteLoader.style.display = 'flex';
-    // noPartner removed
-    toggleReportButton(false);
-
-    // Show idle state - not searching
-    const remoteLoaderEl = document.querySelector('.remote-loader');
-    if (remoteLoaderEl) {
-        remoteLoaderEl.classList.add('idle');
-    }
-
-    // Reset loader text to idle message
-    const searchText = document.querySelector('.search-text');
-    if (searchText) {
-        searchText.textContent = 'Klicke auf Weiter für die nächste Person';
-    }
-
-    // Disable Stop button
-    stopButtons.forEach(btn => {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
-    });
-
-    // Keep Next button enabled so user can restart
-    nextButtons.forEach(btn => {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-    });
-
-    // Show settings again on mobile
-    const settingsGroup = document.querySelector('.settings');
-    if (settingsGroup) {
-        settingsGroup.classList.remove('hidden-during-chat');
-    }
-
-    isActive = false;
-
-    showNotification('Chat beendet.');
-    console.log('✅ Chat stopped - camera released');
-}
-
-// Skip to next partner
-async function skipPartner() {
-    console.log('⏭️ skipPartner called, isActive:', isActive);
-
-    // Check ban status before skipping
-    console.log('🛡️ Checking ban status...');
-    const isBanned = await performBanCheck();
-    console.log('🛡️ Ban check result:', isBanned);
-    if (isBanned) return;
-
-    if (!isActive) {
-        // Start chat if not active
-        console.log('▶️ Chat not active, calling startChat()...');
-        startChat();
+    if (!webrtcManager) {
+        alert('Systemfehler: WebRTC Manager nicht geladen!');
         return;
     }
 
-    console.log('⏭️ Skipping to next partner...');
-
-    // Disconnect current partner
-    if (webrtcManager) {
-        webrtcManager.skip();
-    }
-
-    // Reset remote video
-    if (remoteVideo.srcObject) {
-        const tracks = remoteVideo.srcObject.getTracks();
-        tracks.forEach(track => track.stop());
-    }
-    remoteVideo.srcObject = null;
-    remoteVideo.style.display = 'none';
-    remoteLoader.style.display = 'flex';
-    // noPartner removed
-    toggleReportButton(false);
-
-    // Remove idle class - now searching
-    const remoteLoaderEl = document.querySelector('.remote-loader');
-    if (remoteLoaderEl) {
-        remoteLoaderEl.classList.remove('idle');
-    }
-
-    // Update loader text
-    const searchText = document.querySelector('.search-text');
-    if (searchText) {
-        searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
-    }
-
-    const spinner = document.querySelector('.spinner');
-    if (spinner) spinner.style.display = 'block';
-
-    showNotification('Suche neuen Partner... 🔍');
-
-    // Search for new partner
-    setTimeout(() => {
-        if (isActive && webrtcManager) {
-            const userData = {
-                isGuest: isGuest,
-                country: selectedCountry,
-                gender: selectedGender,
-                supabaseId: authManager.currentUser ? authManager.currentUser.id : null
-            };
-            webrtcManager.findPartner(userData);
-        }
-    }, 300);
-}
-
-// Find Partner
-function findPartner() {
-    if (!isActive) return;
-
-    const userData = {
-        isGuest: isGuest,
-        country: selectedCountry,
-        gender: selectedGender,
-        supabaseId: authManager.currentUser ? authManager.currentUser.id : null
-    };
-
-    webrtcManager.findPartner(userData);
-
-    remoteLoader.style.display = 'flex';
-    // noPartner removed
-    remoteVideo.style.display = 'none';
-}
-
-// Modal Functions
-function openModal(type) {
-    if (type === 'country') {
-        countryModal.style.display = 'flex';
-    } else if (type === 'gender') {
-        genderModal.style.display = 'flex';
-    }
-}
-
-function closeModals() {
-    countryModal.style.display = 'none';
-    genderModal.style.display = 'none';
-}
-
-// Selection Functions
-function selectCountry(country) {
-    selectedCountry = country;
-    const flagImg = countryBtn.querySelector('img');
-    flagImg.src = `https://flagsapi.com/${country}/flat/64.png`;
-}
-
-function selectGender(gender) {
-    selectedGender = gender;
-    const icon = genderBtn.querySelector('i');
-
-    if (gender === 'male') {
-        icon.className = 'fa-solid fa-mars';
-    } else if (gender === 'female') {
-        icon.className = 'fa-solid fa-venus';
-    } else {
-        icon.className = 'fa-solid fa-user';
-    }
-}
-
-// Chat Functions
-function sendMessage(message) {
-    if (!message.trim() || !isActive) return;
-
-    webrtcManager.sendMessage(message);
-    console.log('Message sent:', message);
-}
-
-// Notification
-function showNotification(text) {
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = text;
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('show');
-    }, 10);
-
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// Update Online Count from Database
-async function updateOnlineCount() {
     try {
-        if (!authManager || !authManager.supabase) return;
-
-        const { data, error } = await authManager.supabase.rpc('get_active_user_count');
-
-        if (error) {
-            console.warn('Could not fetch online count:', error);
-            return;
-        }
-
-        // Update UI
-        if (onlineCount && data !== null) {
-            // Ensure at least 1 user (me) is shown if logged in
-            let count = data;
-            if (authManager.isLoggedIn() && count < 1) count = 1;
-
-            onlineCount.textContent = count.toLocaleString('de-DE');
-            console.log('📊 Active users:', count);
-        }
-    } catch (err) {
-        console.error('Error updating count:', err);
-    }
-}
-
-// Animate Online Count (now actually polls DB)
-function animateOnlineCount() {
-    // Initial fetch
-    setTimeout(updateOnlineCount, 1000);
-
-    // Poll every 30 seconds
-    setInterval(() => {
-        updateOnlineCount();
-    }, 30000);
-}
-
-
-
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    if (webrtcManager) {
-        webrtcManager.disconnect();
-    }
-});
-
-// Setup Swipe Gestures for Mobile
-function setupSwipeGestures() {
-    // FIX: use .chat-container or .video-grid as stage
-    const videoStage = document.querySelector('.chat-container') || document.querySelector('.video-grid');
-
-    if (videoStage) {
-        new SwipeHandler(videoStage, {
-            onSwipeLeft: () => {
-                // Swipe LEFT = Next partner (or start if inactive)
-                console.log('👈 Swipe left detected');
-
-                if (!isActive) {
-                    // Start chat if not active
-                    console.log('▶️ Starting chat via swipe...');
-                    skipPartner(); // This will call startChat if not active
-                } else {
-                    // Show swipe animation
-                    showSwipeAnimation('left');
-
-                    // Show notification
-                    showNotification('Suche nächsten Partner... 👈');
-
-                    // Skip to next partner
-                    setTimeout(() => {
-                        skipPartner();
-                    }, 300);
-                }
-            },
-            onSwipeRight: () => {
-                // Swipe RIGHT = Stop (only if active)
-                if (isActive) {
-                    console.log('👉 Swipe right detected - Stop');
-
-                    // Show swipe animation
-                    showSwipeAnimation('right');
-
-                    // Show pause screen
-                    setTimeout(() => {
-                        showPauseScreen();
-                        stopChat();
-                    }, 300);
-                }
-            }
-        });
-
-        console.log('✅ Swipe gestures enabled');
-    }
-}
-
-// Show Swipe Animation
-function showSwipeAnimation(direction) {
-    const videoStage = document.querySelector('.video-stage');
-    const overlay = document.createElement('div');
-    overlay.className = `swipe-overlay swipe-${direction}`;
-
-    if (direction === 'left') {
-        // Left = Next (inverted)
-        overlay.innerHTML = '<i class="fa-solid fa-arrow-left"></i><span>Nächster</span>';
-    } else {
-        // Right = Stop (inverted)
-        overlay.innerHTML = '<i class="fa-solid fa-stop"></i><span>Stopp</span>';
-    }
-
-    videoStage.appendChild(overlay);
-
-    // Trigger animation
-    setTimeout(() => {
-        overlay.classList.add('active');
-    }, 10);
-
-    // Remove after animation
-    setTimeout(() => {
-        overlay.classList.remove('active');
-        setTimeout(() => overlay.remove(), 300);
-    }, 500);
-}
-
-// Show Pause Screen
-function showPauseScreen() {
-    const videoStage = document.querySelector('.video-stage');
-
-    // Create pause overlay
-    const pauseOverlay = document.createElement('div');
-    pauseOverlay.className = 'pause-screen';
-    pauseOverlay.innerHTML = `
-        <div class="pause-content">
-            <i class="fa-solid fa-pause"></i>
-            <h2>Chat pausiert</h2>
-            <p>Wische nach links um fortzufahren</p>
-        </div>
-    `;
-
-    videoStage.appendChild(pauseOverlay);
-
-    // Fade in
-    setTimeout(() => {
-        pauseOverlay.classList.add('active');
-    }, 10);
-
-    // Setup resume gesture
-    const resumeHandler = new SwipeHandler(pauseOverlay, {
-        onSwipeLeft: () => {
-            // Remove pause screen (swipe left to resume - inverted)
-            pauseOverlay.classList.remove('active');
-            setTimeout(() => {
-                pauseOverlay.remove();
-
-                // Show settings again before restart
-                const settingsGroup = document.querySelector('.settings');
-                if (settingsGroup) {
-                    settingsGroup.classList.remove('hidden-during-chat');
-                }
-
-                // Restart chat
-                startChat();
-            }, 300);
-        }
-    });
-}
-
-// Helper to toggle report button
-function toggleReportButton(show) {
-    const btn = document.getElementById('btnReport');
-    if (btn) {
-        btn.style.display = show ? 'flex' : 'none';
-    }
-}
-// Ban Check Helper (Safe Version)
-async function performBanCheck() {
-    console.log('🛡️ Checking ban status...');
-    if (!userManagement || !authManager.currentUser) {
-        console.log('ℹ️ No user/manager, skipping ban check');
-        return false;
-    }
-
-    try {
-        // Race condition: Timeout after 2 seconds
-        const checkPromise = userManagement.checkUserStatus(authManager.currentUser.id);
-        const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ allowed: true, timeout: true }), 2000));
-
-        const status = await Promise.race([checkPromise, timeoutPromise]);
-
-        if (status.timeout) {
-            console.warn('⚠️ Ban check timed out - allowing access');
-        }
-
-        if (!status.allowed) {
-            console.warn('User is banned:', status.reason);
-
-            // Show custom Ban Modal
-            const banModal = document.getElementById('banModal');
-            const reasonText = document.getElementById('ban-reason-text');
-            const durationRow = document.getElementById('ban-duration-row');
-            const durationText = document.getElementById('ban-duration-text');
-            const evidenceContainer = document.getElementById('ban-evidence-container');
-            const evidenceImg = document.getElementById('ban-evidence-img');
-
-            if (banModal) {
-                reasonText.textContent = status.reason;
-
-                if (status.type === 'temporary') {
-                    durationRow.style.display = 'block';
-                    durationText.textContent = `noch ${status.hoursLeft} Stunden`;
-                } else {
-                    durationRow.style.display = 'none';
-                }
-
-                if (status.evidence) {
-                    evidenceImg.src = status.evidence;
-                    evidenceContainer.style.display = 'block';
-                } else {
-                    evidenceContainer.style.display = 'none';
-                }
-
-                banModal.style.display = 'flex';
-            } else {
-                // Fallback to alert if modal not found
-                alert(`⛔️ DU BIST GESPERRT!\n\nGrund: ${status.reason}\n${status.hoursLeft ? 'Dauer: noch ' + status.hoursLeft + ' Stunden' : ''}`);
-            }
-
-            // Ensure UI is reset
-            if (isActive) stopChat();
-            return true; // Is banned
-        }
-    } catch (e) {
-        console.error('Error in ban check:', e);
-    }
-
-    return false; // Not banned
-}
-
-// Start Chat Function (Reverted to Stable Version)
-async function startChat() {
-    console.log('🎬 Starting chat...');
-
-    // Check ban status first (with timeout protection)
-    if (await performBanCheck()) return;
-
-    // Request permissions first
-    try {
-        // 1. Get Local Stream via Manager
-        const stream = await webrtcManager.startLocalStream();
-
-        // 2. Show local video
-        localVideo.srcObject = stream;
-        localVideo.style.display = 'block';
-        localOverlay.style.display = 'none';
-
         isActive = true;
+        updateUIState('searching');
 
-        // Update UI
-        stopButtons.forEach(btn => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        });
-        nextButtons.forEach(btn => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        });
-
-        // 3. Find Partner
-        if (webrtcManager) {
-            const userData = {
-                isGuest: isGuest,
-                country: selectedCountry,
-                gender: selectedGender,
-                supabaseId: authManager.currentUser ? authManager.currentUser.id : null
-            };
-            // Start searching
-            webrtcManager.findPartner(userData);
+        // Request Camera
+        const stream = await webrtcManager.startLocalStream();
+        if (localVideo) {
+            localVideo.srcObject = stream;
+            localVideo.muted = true; // Always mute local
         }
 
-        // Show Remote Loader (Waiting for partner)
-        remoteLoader.style.display = 'flex';
-        // noPartner removed
+        // Hide local overlay
+        if (localOverlay) localOverlay.style.display = 'none';
 
-        // Remove idle class
-        remoteLoader.classList.remove('idle');
-        const searchText = document.querySelector('.search-text');
-        if (searchText) searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
-
-        showNotification('Kamera aktiviert. Suche Partner...');
-
-        // Hide settings on mobile
-        const settingsGroup = document.querySelector('.settings');
-        if (settingsGroup) {
-            settingsGroup.classList.add('hidden-during-chat');
-        }
+        // Connect
+        webrtcManager.startSearch();
 
     } catch (error) {
-        console.error('Error accessing media devices:', error);
-        alert('Fehler: Könnte nicht auf Kamera/Mikrofon zugreifen: ' + error.message);
+        console.error('❌ Start Chat Error:', error);
         isActive = false;
+        updateUIState('idle');
+        alert('Kamera-Fehler: ' + error.message);
+    }
+};
+
+window.stopChat = function () {
+    console.log('⏹️ STOP CHAT');
+    isActive = false;
+    if (webrtcManager) webrtcManager.stop();
+
+    if (localVideo) {
+        localVideo.srcObject = null;
+        localVideo.load();
+    }
+    if (remoteVideo) {
+        remoteVideo.srcObject = null;
+        remoteVideo.load();
+    }
+
+    if (localOverlay) localOverlay.style.display = 'flex';
+    updateUIState('idle');
+};
+
+window.skipPartner = function () {
+    console.log('⏭️ SKIP');
+    if (webrtcManager) webrtcManager.skip();
+    updateUIState('searching');
+
+    // Check ban occasionally
+    performBanCheck();
+};
+
+function sendMessage() {
+    if (!chatInput) return;
+    const text = chatInput.value.trim();
+    if (text && webrtcManager && webrtcManager.isConnected) {
+        webrtcManager.sendMessage(text);
+        displayMessage(text, 'you');
+        chatInput.value = '';
+    }
+}
+
+function displayMessage(text, sender) {
+    // Not implemented in UI yet fully, but function stub needed
+    console.log(`MSG [${sender}]: ${text}`);
+    if (chatMessages) {
+        // ... append logic
+    }
+}
+
+function updateUIState(state) {
+    // stopButtons, nextButtons are arrays
+    if (state === 'searching') {
+        stopButtons.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+        // Show loader
+        if (remoteLoader) remoteLoader.style.display = 'flex';
+        const st = document.querySelector('.search-text');
+        if (st) st.textContent = (window.innerWidth <= 768) ? 'SUCHE...' : 'SUCHE PARTNER...';
+
+    } else if (state === 'connected') {
+        stopButtons.forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+        if (remoteLoader) remoteLoader.style.display = 'none';
+
+    } else { // idle
+        stopButtons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+        if (remoteLoader) remoteLoader.style.display = 'flex';
+        const st = document.querySelector('.search-text');
+        if (st) st.textContent = (window.innerWidth <= 768) ? 'WISCHE FÜR START' : 'KLICKE AUF WEITER';
+    }
+}
+
+function performBanCheck() {
+    if (window.userManagement && authManager.currentUser) {
+        userManagement.checkUserStatus(authManager.currentUser.id);
+    }
+}
+
+// Helpers for Modals
+window.openModal = function (id) {
+    const m = document.getElementById(id + 'Modal');
+    if (m) m.style.display = 'flex';
+};
+window.closeModals = function () {
+    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+};
+
+// Report Modal
+window.openReportModal = function () {
+    if (window.openReportModalLogic) window.openReportModalLogic(); // from report.js
+    else {
+        // Fallback if report.js not loaded
+        document.getElementById('reportModal').style.display = 'flex';
+    }
+}
+
+// Swipe Setup
+function setupSwipeGestures() {
+    const stage = document.querySelector('.chat-container') || document.querySelector('.video-grid');
+    if (stage && typeof SwipeHandler !== 'undefined') {
+        window.swipeHandler = new SwipeHandler(stage, {
+            onSwipeLeft: () => {
+                if (!isActive) window.startChat();
+                else window.skipPartner();
+            },
+            onSwipeRight: () => window.stopChat()
+        });
     }
 }

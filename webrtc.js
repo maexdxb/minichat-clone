@@ -1,5 +1,8 @@
 class WebRTCManager {
     constructor(signalingServerUrl) {
+        console.log("🛠️ WebRTCManager Constructor called with:", signalingServerUrl);
+        if (!signalingServerUrl) console.error("❌ NO SIGNALING SERVER URL PROVIDED!");
+
         this.socket = null;
         this.signalingServerUrl = signalingServerUrl;
         this.localStream = null;

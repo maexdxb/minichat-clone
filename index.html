@@ -20,7 +20,7 @@
 
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=84">
+    <link rel="stylesheet" href="style.css?v=86">
 </head>
 
 <body>
@@ -134,24 +134,26 @@
 
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
-        <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()" disabled
-            style="opacity: 0.5;">LADEN...</button>
+        <!-- ENABLED BY DEFAULT in v86 to handle stuck loading state -->
+        <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()">START</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts v84 -->
-    <script src="config.js?v=84"></script>
-    <script src="auth.js?v=84"></script>
-    <script src="user-management.js?v=84"></script>
-    <script src="swipe.js?v=84"></script>
-    <script src="webrtc.js?v=84"></script>
-    <script src="script.js?v=84"></script>
-    <script src="report.js?v=84"></script>
+    <!-- Scripts v86 -->
+    <script src="config.js?v=86"></script>
+    <script src="auth.js?v=86"></script>
+    <script src="user-management.js?v=86"></script>
+    <script src="swipe.js?v=86"></script>
+    <script src="webrtc.js?v=86"></script>
+    <script src="script.js?v=86"></script>
+    <script src="report.js?v=86"></script>
 
     <script>
         function startMobileChat() {
+            console.log("📱 Mobile Start pressed v86");
             document.getElementById('start-overlay').style.display = 'none';
             if (window.startChat) window.startChat();
+            else alert("WebRTC noch nicht bereit, bitte warten...");
         }
     </script>
 </body>
