@@ -3,8 +3,7 @@
     "version": "1.0.101",
     "description": "Random video chat application with Google authentication",
     "scripts": {
-        "dev": "npx serve .",
-        "deploy": "vercel --prod"
+        "build": "echo 'Done'"
     },
     "keywords": [
         "video-chat",
