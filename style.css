@@ -163,15 +163,19 @@ body {
 video {
     width: 100%;
     height: 100%;
-    /* Mobile: Cover for good preview */
     object-fit: cover;
     object-position: center center;
     background: #000;
 }
 
-/* Desktop: Contain to show exact mobile frame without additional cropping */
+/* Local video: Mirror for selfie effect */
+#localVideo {
+    transform: scaleX(-1);
+}
+
+/* Desktop: Remote video uses contain to show exact mobile frame */
 @media (min-width: 769px) {
-    video {
+    #remoteVideo {
         object-fit: contain;
     }
 }
