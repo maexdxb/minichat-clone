@@ -256,8 +256,9 @@
                         <th>Email</th>
                         <th>Name</th>
                         <th>Status</th>
+                        <th>Account</th>
+                        <th>Zuletzt gesehen</th>
                         <th>Grund</th>
-                        <th>Bis</th>
                         <th>Aktionen</th>
                     </tr>
                 </thead>
@@ -339,20 +340,39 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('users-table').style.display = 'block';
 
+            // Calculate active users (seen in last 2 minutes)
+            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+
+            const onlineUsers = users.filter(u => {
+                const lastSeen = u.last_seen ? new Date(u.last_seen) : new Date(0);
+                return lastSeen > twoMinutesAgo;
+            });
+
             // Update stats
             document.getElementById('total-users').textContent = users.length;
-            document.getElementById('active-users').textContent = users.filter(u => u.status === 'active').length;
+            document.getElementById('active-users').textContent = onlineUsers.length;
             document.getElementById('banned-users').textContent = users.filter(u => u.status !== 'active').length;
 
             // Render table
             const tbody = document.getElementById('users-tbody');
-            tbody.innerHTML = users.map(user => `
+            tbody.innerHTML = users.map(user => {
+                const lastSeen = user.last_seen ? new Date(user.last_seen) : null;
+                const isOnline = lastSeen && lastSeen > twoMinutesAgo;
+                const lastSeenText = lastSeen ? lastSeen.toLocaleString('de-DE') : 'Nie';
+
+                return `
                 <tr>
                     <td>${user.email}</td>
                     <td>${user.display_name || '-'}</td>
+                    <td>
+                        ${isOnline ?
+                        '<span class="status-badge status-active">● Online</span>' :
+                        '<span style="color: grey;">○ Offline</span>'
+                    }
+                    </td>
                     <td><span class="status-badge status-${user.status}">${getStatusText(user.status)}</span></td>
+                    <td>${lastSeenText}</td>
                     <td>${user.ban_reason || '-'}</td>
-                    <td>${user.ban_until ? new Date(user.ban_until).toLocaleString('de-DE') : '-'}</td>
                     <td>
                         ${user.status === 'active' ? `
                             <button class="btn btn-ban-temp" onclick="openBanModal('${user.user_id}', 'temp')">
@@ -368,14 +388,14 @@
                         `}
                     </td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         function getStatusText(status) {
             const texts = {
                 'active': 'Aktiv',
-                'temp_banned': 'Temp. gesperrt',
-                'perm_banned': 'Perm. gesperrt'
+                'temp_banned': 'Gesperrt (Temp)',
+                'perm_banned': 'Gesperrt (Perm)'
             };
             return texts[status] || status;
         }

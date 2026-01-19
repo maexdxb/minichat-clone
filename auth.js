@@ -26,7 +26,7 @@ class AuthManager {
             if (session) {
                 this.currentUser = session.user;
                 this.updateUIForLoggedInUser();
-                this.syncUserToDB(session.user);
+                this.startHeartbeat();
             }
 
             // Listen for auth state changes
@@ -36,7 +36,7 @@ class AuthManager {
                 if (session) {
                     this.currentUser = session.user;
                     this.updateUIForLoggedInUser();
-                    this.syncUserToDB(session.user);
+                    this.startHeartbeat();
                 } else {
                     this.currentUser = null;
                     this.updateUIForLoggedOutUser();
@@ -225,27 +225,44 @@ class AuthManager {
         if (!user || !this.supabase) return;
 
         try {
+            const updates = {
+                user_id: user.id,
+                email: user.email,
+                display_name: user.user_metadata?.full_name || user.email,
+                last_seen: new Date().toISOString(), // Update last seen
+                updated_at: new Date().toISOString()
+            };
+
             const { error } = await this.supabase
                 .from('user_management')
-                .upsert({
-                    user_id: user.id,
-                    email: user.email,
-                    display_name: user.user_metadata?.full_name || user.email,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'user_id' });
+                .upsert(updates, { onConflict: 'user_id' });
 
             if (error) {
                 console.error('❌ Sync to DB failed:', error.message);
-                // Try to alert user if it looks like a permission error
                 if (error.code === '42501' || error.message.includes('row-level security')) {
-                    console.warn('⚠️ RLS Policy Error: User cannot write to user_management table. Please run the FIX-DB.md SQL script.');
+                    console.warn('⚠️ RLS Policy Error: Please run FIX-DB.md');
                 }
             } else {
-                console.log('✅ User synced to DB for admin panel');
+                console.log('✅ User synced to DB (Heartbeat)');
             }
         } catch (err) {
             console.error('Sync error:', err);
         }
+    }
+
+    // Start heartbeat to update online status
+    startHeartbeat() {
+        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+
+        // Initial sync
+        if (this.currentUser) this.syncUserToDB(this.currentUser);
+
+        // Sync every 60 seconds
+        this.heartbeatInterval = setInterval(() => {
+            if (this.currentUser) {
+                this.syncUserToDB(this.currentUser);
+            }
+        }, 60000);
     }
 }
 
