@@ -511,24 +511,51 @@
             if (tabName === 'reports') loadReports();
         }
 
+        // Helper to get user display string
+        async function getUserDisplay(userId) {
+            if (!userId) return 'Gast/Unbekannt';
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user_management')
+                    .select('email, display_name')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (data) {
+                    return `${data.email} (${data.display_name || 'Kein Name'})`;
+                }
+            } catch (e) { }
+            return userId.substring(0, 8) + '...';
+        }
+
         async function loadReports() {
             console.log('📡 Loading reports from Supabase...');
             const tbody = document.getElementById('reports-tbody');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Lade...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Lade...</td></tr>';
 
             const { data, error } = await supabaseClient.from('reports').select('*').order('created_at', { ascending: false });
 
             if (error) {
                 console.error('❌ Supabase error loading reports:', error);
-                tbody.innerHTML = `<tr><td colspan="5" style="color:red">Error: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="color:red">Error: ${error.message}</td></tr>`;
                 return;
             }
 
-            console.log('✅ Reports loaded:', data.length, data);
+            console.log('✅ Reports loaded:', data.length);
 
             if (!data.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Keine Meldungen gefunden.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Keine Meldungen gefunden.</td></tr>';
                 return;
+            }
+
+            // Get all user details to avoid multiple DB calls in loop
+            const userIds = [...new Set(data.flatMap(r => [r.reporter_id, r.reported_user_id].filter(id => id)))];
+            const { data: userData } = await supabaseClient.from('user_management').select('user_id, email, display_name').in('user_id', userIds);
+            const userMap = {};
+            if (userData) {
+                userData.forEach(u => {
+                    userMap[u.user_id] = `${u.email} (${u.display_name || '-'})`;
+                });
             }
 
             currentReports = data;
@@ -536,7 +563,7 @@
             tbody.innerHTML = data.map(r => `
                 <tr>
                     <td>${new Date(r.created_at).toLocaleString()}</td>
-                    <td><code style="font-size:10px">${r.reported_user_id || 'Gast'}</code></td>
+                    <td><code title="${r.reported_user_id}">${userMap[r.reported_user_id] || 'Gast/Unbekannt'}</code></td>
                     <td>${r.reason || '-'}</td>
                     <td><img src="${r.screenshot}" class="report-img-thumb" onclick="openReviewModal('${r.id}')"></td>
                     <td><span class="status-badge status-${r.status === 'pending' ? 'perm_banned' : 'active'}">${r.status}</span></td>
@@ -545,15 +572,20 @@
             `).join('');
         }
 
-        window.openReviewModal = function (id) {
+        window.openReviewModal = async function (id) {
             const r = currentReports.find(x => x.id == id);
             if (!r) return;
             currentReviewReportId = id;
+
+            // Fetch names for modal as well
+            const reportedInfo = await getUserDisplay(r.reported_user_id);
+            const reporterInfo = await getUserDisplay(r.reporter_id);
+
             document.getElementById('review-img').src = r.screenshot;
-            document.getElementById('review-reported-user').textContent = r.reported_user_id || 'Gast';
-            document.getElementById('review-reason').textContent = r.reason;
-            document.getElementById('review-reporter').textContent = r.reporter_id || 'Anon';
+            document.getElementById('review-reported-user').textContent = reportedInfo;
+            document.getElementById('review-reporter').textContent = reporterInfo;
             document.getElementById('review-time').textContent = new Date(r.created_at).toLocaleString();
+            document.getElementById('review-reason').textContent = r.reason;
             document.getElementById('review-modal').style.display = 'flex';
         }
 
