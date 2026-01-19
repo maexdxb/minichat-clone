@@ -11,7 +11,7 @@ let stopButtons = [];
 let nextButtons = [];
 let btnGuest;
 let btnNext; // Single next button reference
-let localVideo, remoteVideo, localOverlay, remoteLoader, noPartner;
+let localVideo, remoteVideo, localOverlay, remoteLoader;
 let chatInput, chatMessages, btnSend;
 let countryModal, genderModal, countryBtn, genderBtn, onlineCount;
 let userManagement; // Add global userManagement instance
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     localOverlay = document.querySelector('.local-overlay');
     // Fallback for remote loader class mismatch
     remoteLoader = document.querySelector('.remote-loader') || document.querySelector('.video-overlay');
-    noPartner = document.getElementById('noPartner');
     chatInput = document.getElementById('chatInput');
     countryModal = document.getElementById('countryModal');
     genderModal = document.getElementById('genderModal');
