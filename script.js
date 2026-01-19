@@ -7,7 +7,10 @@ let selectedCountry = 'DE';
 let selectedGender = 'male';
 
 // DOM Elements - will be initialized in DOMContentLoaded
-let btnStop, btnNext, btnGuest;
+let stopButtons = [];
+let nextButtons = [];
+let btnGuest;
+let btnStart;
 let localVideo, remoteVideo, localOverlay, remoteLoader, noPartner;
 let chatInput, chatMessages, btnSend;
 let countryModal, genderModal, countryBtn, genderBtn, onlineCount;
@@ -17,13 +20,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 DOM Content Loaded - Initializing...');
 
     // NOW select DOM elements
-    btnStop = document.querySelector('.btn-stop');
-    btnNext = document.querySelector('.btn-next');
+    stopButtons = document.querySelectorAll('.btn-stop, #btnStop');
+    nextButtons = document.querySelectorAll('.btn-next, #btnNext');
+    btnStart = document.querySelector('.btn-start, #btnStart'); // Try both class and ID
     btnGuest = document.querySelector('.btn-guest');
     localVideo = document.getElementById('localVideo');
     remoteVideo = document.getElementById('remoteVideo');
     localOverlay = document.querySelector('.local-overlay');
-    remoteLoader = document.querySelector('.remote-loader');
+    // Fallback for remote loader class mismatch
+    remoteLoader = document.querySelector('.remote-loader') || document.querySelector('.video-overlay');
     noPartner = document.getElementById('noPartner');
     chatInput = document.getElementById('chatInput');
     countryModal = document.getElementById('countryModal');
@@ -40,18 +45,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('remoteVideo:', remoteVideo);
     console.log('localOverlay:', localOverlay);
     console.log('remoteLoader:', remoteLoader);
-    console.log('btnStop:', btnStop);
-    console.log('btnNext:', btnNext);
+    console.log('btnStop count:', stopButtons.length);
+    console.log('btnNext count:', nextButtons.length);
 
     if (!localVideo || !remoteVideo || !localOverlay || !remoteLoader) {
         console.error('❌ Critical DOM elements missing!');
-        console.error('Missing elements:', {
-            localVideo: !localVideo,
-            remoteVideo: !remoteVideo,
-            localOverlay: !localOverlay,
-            remoteLoader: !remoteLoader
-        });
-        alert('Fehler: Kritische Elemente fehlen. Bitte Seite neu laden.');
+        const missing = [];
+        if (!localVideo) missing.push('localVideo');
+        if (!remoteVideo) missing.push('remoteVideo');
+        if (!localOverlay) missing.push('localOverlay');
+        if (!remoteLoader) missing.push('remoteLoader');
+
+        console.error('Missing elements:', missing);
+        alert('Fehler: Kritische Elemente fehlen (' + missing.join(', ') + '). Bitte Cache leeren und Seite neu laden.');
         return;
     }
 
@@ -182,8 +188,20 @@ function setupWebRTCCallbacks() {
 
 // Event Listeners
 function setupEventListeners() {
-    btnStop.addEventListener('click', stopChat);
-    btnNext.addEventListener('click', skipPartner);
+    stopButtons.forEach(btn => btn.addEventListener('click', stopChat));
+    nextButtons.forEach(btn => btn.addEventListener('click', skipPartner));
+    if (btnStart) btnStart.addEventListener('click', startChat);
+
+    // Initial button states
+    stopButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+    nextButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+
     countryBtn.addEventListener('click', () => openModal('country'));
     genderBtn.addEventListener('click', () => openModal('gender'));
 
@@ -306,10 +324,14 @@ async function startChat() {
         }
 
         isActive = true;
-        btnStop.disabled = false;
-        btnStop.style.opacity = '1';
-        btnNext.disabled = false;
-        btnNext.style.opacity = '1';
+        stopButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+        nextButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
 
         // Find partner
         const userData = {
@@ -582,11 +604,7 @@ function animateOnlineCount() {
     }, 30000);
 }
 
-// Initial button states
-btnStop.disabled = true;
-btnStop.style.opacity = '0.5';
-btnNext.disabled = true;
-btnNext.style.opacity = '0.5';
+
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
