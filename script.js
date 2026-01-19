@@ -10,7 +10,6 @@ let selectedGender = 'male';
 let stopButtons = [];
 let nextButtons = [];
 let btnGuest;
-let btnStart;
 let btnNext; // Single next button reference
 let localVideo, remoteVideo, localOverlay, remoteLoader, noPartner;
 let chatInput, chatMessages, btnSend;
@@ -24,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // NOW select DOM elements
     stopButtons = document.querySelectorAll('.btn-stop, #btnStop');
     nextButtons = document.querySelectorAll('.btn-next, #btnNext');
-    btnStart = document.querySelector('.btn-start, #btnStart'); // Try both class and ID
     btnNext = document.querySelector('.btn-next, #btnNext'); // Single next button
     btnGuest = document.querySelector('.btn-guest');
     localVideo = document.getElementById('localVideo');
@@ -211,19 +209,11 @@ function setupEventListeners() {
 
     stopButtons.forEach(btn => btn.addEventListener('click', stopChat));
 
-    if (btnStart) {
-        // Remove existing listeners if any (clone node trick usually clears them, but simple add is fine here)
-        btnStart.onclick = null; // Clear old inline handlers
-        btnStart.addEventListener('click', (e) => {
-            console.log('🖱️ Start Button CLICKED');
-            startChat();
-        });
-        console.log('✅ Listener attached to btnStart');
-    } else {
-        console.error('❌ btnStart not found during setupEventListeners');
+    // Next button always works - starts chat if inactive, skips if active
+    if (btnNext) {
+        btnNext.addEventListener('click', skipPartner);
+        console.log('✅ Listener attached to btnNext');
     }
-
-    if (btnNext) btnNext.addEventListener('click', skipPartner); // Fallback for single button
 
     // Add listeners to ALL next buttons
     nextButtons.forEach(btn => {
@@ -240,9 +230,11 @@ function setupEventListeners() {
         btn.disabled = true;
         btn.style.opacity = '0.5';
     });
+
+    // Next button is always enabled
     nextButtons.forEach(btn => {
-        btn.disabled = true;
-        btn.style.opacity = '0.5';
+        btn.disabled = false;
+        btn.style.opacity = '1';
     });
 
     countryBtn.addEventListener('click', () => openModal('country'));
