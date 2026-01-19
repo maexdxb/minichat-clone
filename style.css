@@ -1,16 +1,28 @@
 :root {
-    --primary-bg: #1a1a1a;
-    --header-bg: #2c3e50;
-    /* A guess based on image, gradient blue-ish */
-    --header-gradient: linear-gradient(to right, #3a5c83, #2b3947);
-    --btn-blue: #1c2b4a;
-    /* Dark blue start button */
-    --btn-red: #4a2b2b;
-    /* Dark red/brown stop button */
+    /* DARK NEON THEME */
+    --primary-bg: #050505;
+    /* Deep Black */
+    --secondary-bg: #121212;
+    /* Card Background */
+    --header-bg: #0a0a0a;
+    --header-gradient: linear-gradient(to bottom, #0a0a0a, #000000);
+
+    /* NEON PINK ACCENTS */
+    --neon-pink: #ff00cc;
+    --neon-glow: 0 0 10px rgba(255, 0, 204, 0.3), 0 0 20px rgba(255, 0, 204, 0.1);
+
+    --btn-blue: #000;
+    /* Now Black with Neon Blue Border */
+    --btn-red: #000;
+    /* Now Black with Neon Red Border */
+
     --text-white: #ffffff;
     --text-gray: #aaaaaa;
     --border-color: #333;
-    --accent-blue: #007bff;
+
+    /* Neon Colors for specific buttons */
+    --neon-blue: #00f3ff;
+    --neon-red: #ff3333;
 }
 
 * {
@@ -27,27 +39,132 @@ body {
     height: 100vh;
     height: 100dvh;
     /* Dynamic viewport height for mobile */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: fixed;
     width: 100%;
     /* iOS safe area support */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: fixed;
+}
+
+/* NEON FRAME STYLE */
+
+/* Main Containers (Video Wrapper) */
+.video-wrapper {
+    background-color: #000;
+    /* Create the 'Frame' look with inset shadow */
+    box-shadow: inset 0 0 20px rgba(255, 0, 204, 0.2),
+        0 0 10px rgba(255, 0, 204, 0.4);
+    border: 1px solid #ff00cc;
+    border-radius: 8px;
+    /* Slightly less rounded for tech look */
+
+    /* Cyberpunk corners could be done with clip-path, but border-radius is safer for now */
+    overflow: hidden;
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Control Buttons - Black Center, Colored Glow on Hover */
+.btn-control {
+    flex: 1;
+    height: 64px;
+    background: #000;
+    /* Black Center */
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    /* Default State: Subtle Border */
+    border: 1px solid #333;
+    box-shadow: none;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Specific Button Colors (Subtle hint) */
+.btn-start {
+    color: #00ff9d;
+    /* Neon Green Text */
+    border-color: rgba(0, 255, 157, 0.3);
+}
+
+.btn-stop {
+    color: #ff3333;
+    /* Neon Red Text */
+    border-color: rgba(255, 51, 51, 0.3);
+}
+
+.btn-next {
+    color: #00f3ff;
+    /* Neon Blue Text */
+    border-color: rgba(0, 243, 255, 0.3);
+}
+
+/* HOVER EFFECTS - The Glow Up */
+.btn-start:hover {
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.6), inset 0 0 10px rgba(0, 255, 157, 0.2);
+    border-color: #00ff9d;
+    text-shadow: 0 0 8px #00ff9d;
+}
+
+.btn-stop:hover {
+    box-shadow: 0 0 15px rgba(255, 51, 51, 0.6), inset 0 0 10px rgba(255, 51, 51, 0.2);
+    border-color: #ff3333;
+    text-shadow: 0 0 8px #ff3333;
+}
+
+.btn-next:hover {
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.6), inset 0 0 10px rgba(0, 243, 255, 0.2);
+    border-color: #00f3ff;
+    text-shadow: 0 0 8px #00f3ff;
+}
+
+/* Active State (Click) */
+.btn-control:active {
+    transform: scale(0.98);
+    background: #111;
+}
+
+/* Chat Container Frame */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    /* The big neon frame */
+    border: 2px solid #ff00cc;
+    box-shadow: 0 0 20px rgba(255, 0, 204, 0.2), inset 0 0 30px rgba(255, 0, 204, 0.1);
+    background: #000;
+    margin: 15px;
+    border-radius: 12px;
 }
 
 /* Header */
 .main-header {
     height: 50px;
-    background: var(--header-gradient);
+    background: var(--primary-bg);
     display: flex;
     align-items: center;
     padding: 0 20px;
     justify-content: space-between;
-    border-bottom: 1px solid #444;
+    border-bottom: 2px solid var(--neon-pink);
+    box-shadow: var(--neon-glow);
 }
 
 .logo-container {
@@ -77,7 +194,7 @@ body {
     display: flex;
     align-items: center;
     font-size: 0.9rem;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s, color: 0.2s;
 }
 
 .nav-item:hover,
@@ -189,33 +306,35 @@ body {
 
 #onlineCount {
     font-weight: 700;
-    color: #4caf50;
 }
 
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Main Video Stage */
-.video-stage {
+/* Main Video Container */
+.video-grid {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    /* Default: Stacked vertically on mobile */
+    gap: 15px;
+    /* More gap to show black bg */
+    padding: 15px;
     flex: 1;
-    display: flex;
-    gap: 0;
+    overflow: hidden;
+    /* Prevent scroll */
+}
+
+.video-wrapper {
     background-color: #000;
-    min-height: 0;
+    border-radius: 16px;
     overflow: hidden;
     position: relative;
-}
+    box-shadow: 0 0 15px rgba(255, 0, 204, 0.1);
+    /* Pink Border Fading */
+    border: 1px solid rgba(255, 0, 204, 0.3);
+    border-top: 1px solid var(--neon-pink);
+    /* Top is brighter */
 
-.video-container {
-    flex: 1;
-    position: relative;
     display: flex;
-    justify-content: center;
     align-items: center;
-    overflow: hidden;
+    justify-content: center;
 }
 
 .local-video {
@@ -445,37 +564,58 @@ body {
 }
 
 .btn-control {
-    width: 120px;
-    height: 120px;
-    border: none;
+    flex: 1;
+    height: 64px;
+    border: 2px solid;
     border-radius: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #000;
     color: white;
-    font-size: 1rem;
-    font-weight: 600;
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    pointer-events: auto !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-start {
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
 }
 
 .btn-stop {
-    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-}
-
-.btn-stop:hover {
-    background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+    box-shadow: 0 0 10px rgba(255, 51, 51, 0.2);
 }
 
 .btn-next {
-    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    /* For next button to stand out */
+    background: rgba(0, 243, 255, 0.05);
+}
+
+/* Hover Effects */
+.btn-start:active,
+.btn-next:active {
+    background: var(--neon-blue);
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-blue);
+}
+
+.btn-stop:active {
+    background: var(--neon-red);
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-red);
 }
 
 .btn-next:hover {
@@ -1237,6 +1377,7 @@ body {
         transform: scale(1.1);
     }
 }
+
 /* Report Button Overlay */
 .btn-report-overlay {
     position: absolute;
@@ -1248,7 +1389,8 @@ body {
     background-color: rgba(0, 0, 0, 0.4);
     color: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    display: none; /* Hidden by default */
+    display: none;
+    /* Hidden by default */
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -1263,4 +1405,3 @@ body {
     border-color: #dc3545;
     transform: scale(1.1);
 }
-

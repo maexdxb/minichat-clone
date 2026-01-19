@@ -12,9 +12,23 @@
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            /* DARK NEON THEME ADMIN */
+            --bg-dark: #050505;
+            --card-bg: #111;
+            --neon-pink: #ff00cc;
+            --neon-blue: #00f3ff;
+            --neon-red: #ff3333;
+            --text-main: #fff;
+            --text-muted: #aaa;
+            --border-glow: 0 0 10px rgba(255, 0, 204, 0.2);
+            --border-faded: 1px solid rgba(255, 0, 204, 0.3);
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: #f0f2f5;
+            background: var(--bg-dark);
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
         }
@@ -22,22 +36,26 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            /* Neon Border */
+            border: 1px solid rgba(255, 0, 204, 0.3);
+            border-top: 1px solid var(--neon-pink);
+            box-shadow: var(--border-glow);
         }
 
         h1 {
             margin-top: 0;
-            color: #1a1a1a;
+            color: var(--text-main);
             display: flex;
             align-items: center;
             gap: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
         .subtitle {
-            color: #666;
+            color: var(--text-muted);
             margin-bottom: 30px;
         }
 
@@ -49,41 +67,49 @@
         }
 
         .stat-card {
-            background: #f8f9fa;
+            background: #000;
             padding: 20px;
             border-radius: 8px;
-            border: 1px solid #eee;
+            border: 1px solid #333;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
         }
 
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #333;
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
         }
 
         .stat-label {
-            color: #666;
+            color: var(--text-muted);
             font-size: 14px;
         }
 
         .nav-tabs {
             display: flex;
             margin-bottom: 20px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 1px solid #333;
         }
 
         .nav-tab {
             padding: 10px 20px;
             cursor: pointer;
             font-weight: 500;
-            color: #666;
+            color: var(--text-muted);
             border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
+            margin-bottom: -1px;
+            transition: all 0.2s;
+        }
+
+        .nav-tab:hover {
+            color: #fff;
         }
 
         .nav-tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: var(--neon-pink);
+            border-bottom-color: var(--neon-pink);
+            text-shadow: 0 0 8px rgba(255, 0, 204, 0.4);
         }
 
         table {
@@ -94,78 +120,82 @@
         th {
             text-align: left;
             padding: 12px;
-            background: #f8f9fa;
-            color: #444;
+            background: #000;
+            color: #fff;
             font-weight: 600;
+            border-bottom: 1px solid #333;
         }
 
         td {
             padding: 12px;
-            border-bottom: 1px solid #eee;
-            vertical-align: middle;
+            border-bottom: 1px solid #222;
+            color: #ddd;
         }
 
-        tr:hover {
-            background-color: #fcfcfc;
+        tr:hover td {
+            background: #1a1a1a;
         }
 
         .status-badge {
             padding: 4px 8px;
-            border-radius: 12px;
+            border-radius: 4px;
             font-size: 12px;
             font-weight: 500;
         }
 
         .status-active {
-            background: #d1fae5;
-            color: #065f46;
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
         }
 
         .status-temp_banned {
-            background: #fee2e2;
-            color: #991b1b;
+            background: rgba(255, 200, 0, 0.1);
+            color: #ffcc00;
+            border: 1px solid #ffcc00;
         }
 
         .status-perm_banned {
-            background: #fecaca;
-            color: #7f1d1d;
+            background: rgba(255, 51, 51, 0.1);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
         }
 
         .btn {
             padding: 6px 12px;
-            border: none;
             border-radius: 4px;
+            border: none;
             cursor: pointer;
             font-size: 13px;
-            transition: opacity 0.2s;
-            color: white;
-            margin-right: 5px;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
-        }
-
-        .btn-ban-temp {
-            background: #f59e0b;
-        }
-
-        .btn-ban-perm {
-            background: #ef4444;
-        }
-
-        .btn-unban {
-            background: #10b981;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
         .btn-primary {
-            background: #3b82f6;
+            background: transparent;
+            border: 1px solid var(--neon-pink);
+            color: var(--neon-pink);
         }
 
-        .btn-secondary {
-            background: #6b7280;
+        .btn-primary:hover {
+            background: var(--neon-pink);
+            color: #000;
+            box-shadow: 0 0 10px var(--neon-pink);
         }
 
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+        }
+
+        .btn-danger:hover {
+            background: var(--neon-red);
+            color: #000;
+            box-shadow: 0 0 10px var(--neon-red);
+        }
+
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -173,18 +203,28 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
-            background: white;
-            padding: 24px;
-            border-radius: 8px;
-            width: 400px;
-            max-width: 90%;
+            background: #111;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            border: 1px solid rgba(255, 0, 204, 0.3);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            color: #fff;
+        }
+
+        .modal-content h2 {
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-top: 0;
         }
 
         .form-group {
@@ -194,7 +234,7 @@
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            font-weight: 500;
+            color: #aaa;
         }
 
         .form-group input,
@@ -202,24 +242,85 @@
         .form-group textarea {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid #333;
             border-radius: 4px;
-            box-sizing: border-box;
+            background: #000;
+            color: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--neon-blue);
+            outline: none;
         }
 
         .report-img-thumb {
-            width: 60px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 4px;
+            border: 1px solid #333;
             cursor: pointer;
-            border: 1px solid #ddd;
         }
 
         .report-img-full {
             max-width: 100%;
-            max-height: 400px;
-            object-fit: contain;
+            max-height: 300px;
+            border: 1px solid #333;
+            border-radius: 4px;
+        }
+
+        /* Ban Buttons in Review */
+        .btn-ban-temp {
+            background: transparent;
+            border: 1px solid #ffcc00;
+            color: #ffcc00;
+            margin-right: 5px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-ban-temp:hover {
+            background: #ffcc00;
+            color: #000;
+        }
+
+        .btn-ban-perm {
+            background: transparent;
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-ban-perm:hover {
+            background: var(--neon-red);
+            color: #000;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-unban {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-unban:hover {
+            background: var(--neon-blue);
+            color: #000;
         }
     </style>
 </head>
