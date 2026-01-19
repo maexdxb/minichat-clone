@@ -297,40 +297,80 @@
     <script src="config.js"></script>
     <script src="user-management.js"></script>
     <script>
-        let supabase;
+        // let supabase; // Removed duplicate
         let userManagement;
         let currentUserId = null;
+        let supabaseClient; // Renamed to avoid window.supabase conflict
 
         // Initialize
+        function log(msg) {
+            console.log(msg);
+            const debugC = document.getElementById('debug-console');
+            if (debugC) debugC.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
+        }
+
         async function init() {
             try {
+                // Show debug info
+                const container = document.querySelector('.container');
+                if (!document.getElementById('debug-console')) {
+                    const d = document.createElement('div');
+                    d.id = 'debug-console';
+                    d.style.cssText = 'margin-top: 20px; padding: 10px; background: #eee; border: 1px solid #999; font-family: monospace; font-size: 12px; color: #333; max-height: 200px; overflow-y: auto;';
+                    container.appendChild(d);
+                }
+
+                log('🚀 Starte Admin-Panel Init...');
+
                 // Initialize Supabase
                 const { createClient } = supabase;
-                supabase = createClient(SIAGECHAT_CONFIG.supabase.url, SIAGECHAT_CONFIG.supabase.anonKey);
-                userManagement = new UserManagement(supabase);
+                if (!SIAGECHAT_CONFIG.supabase.url) throw new Error('Supabase URL fehlt in Config!');
+
+                supabaseClient = createClient(SIAGECHAT_CONFIG.supabase.url, SIAGECHAT_CONFIG.supabase.anonKey);
+                log('✅ Supabase Client erstellt');
+
+                userManagement = new UserManagement(supabaseClient);
+                log('✅ UserManagement initialisiert');
 
                 // Check if logged in
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data: { session }, error: authError } = await supabaseClient.auth.getSession();
+
+                if (authError) {
+                    log('❌ Auth Fehler: ' + authError.message);
+                    throw authError;
+                }
 
                 if (!session) {
-                    window.location.href = 'index.html';
+                    log('⚠️ Rote Karte: Keine Session gefunden! User ist nicht eingeloggt.');
+                    showError('Du bist nicht eingeloggt! Bitte gehe zur Startseite und melde dich an.');
+                    setTimeout(() => window.location.href = 'index.html', 3000);
                     return;
                 }
+
+                log('✅ User ist eingeloggt als: ' + session.user.email);
+                log('User ID: ' + session.user.id);
 
                 // Check if admin
+                log('🔍 Prüfe Admin-Rechte...');
                 const isAdmin = await userManagement.isAdmin(session.user.id);
+
                 if (!isAdmin) {
-                    showError('Du hast keine Admin-Berechtigung!');
-                    setTimeout(() => window.location.href = 'index.html', 2000);
+                    log('❌ Zugriff verweigert: User steht nicht in admins Tabelle.');
+                    showError('Du hast keine Admin-Berechtigung! (Email: ' + session.user.email + ')');
                     return;
                 }
 
+                log('✅ Admin-Rechte bestätigt!');
+
                 // Load users
+                log('📦 Lade User-Liste...');
                 await loadUsers();
+                log('✅ User-Liste geladen!');
 
             } catch (error) {
                 console.error('Init error:', error);
-                showError('Fehler beim Laden: ' + error.message);
+                log('💥 FATALER FEHLER: ' + error.message);
+                showError('Fehler: ' + error.message);
             }
         }
 
@@ -422,7 +462,7 @@
                 return;
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
 
             let result;
             if (type === 'temp') {
