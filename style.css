@@ -279,14 +279,16 @@ video {
 }
 
 /* --- CONTROLS --- */
+/* --- CONTROLS --- */
 .controls-bar {
     min-height: 80px;
-    /* Fixed height for controls */
     padding: 10px 15px;
     background: #000;
-    border-top: 2px solid var(--neon-pink);
+    border-top: 1px solid rgba(255, 0, 204, 0.2);
+    /* Very subtle pink line */
     display: flex;
-    gap: 10px;
+    gap: 15px;
+    /* More space for glass buttons */
     align-items: center;
     overflow-x: auto;
     z-index: 40;
@@ -295,37 +297,102 @@ video {
 .btn-control {
     flex: 1;
     height: 60px;
-    background: #000;
-    color: #fff;
-    border: 1px solid #333;
-    border-radius: 10px;
-    font-weight: bold;
+    min-width: 80px;
+
+    /* LIQUID GLASS STYLE */
+    background: rgba(255, 255, 255, 0.03);
+    /* Extremely subtle transparency */
+    backdrop-filter: blur(10px);
+    /* The Glass Blur */
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Borders: Thin glass edge */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    /* Top highlight */
+    border-radius: 16px;
+    /* Smooth corners */
+
+    /* Text */
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
     text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+
+    /* Base Shadow: Subtle Pink inward tint */
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.5),
+        /* Depth */
+        inset 0 0 20px rgba(255, 0, 204, 0.02);
+    /* Barely visible pink liquid inside */
+
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    min-width: 80px;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
 }
 
-/* Specific Colors */
-.btn-start {
-    color: var(--neon-green);
-    border-color: rgba(0, 255, 157, 0.3);
+/* Icons within buttons */
+.btn-control i {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+    transition: 0.3s;
 }
 
-.btn-stop {
-    color: var(--neon-red);
-    border-color: rgba(255, 51, 51, 0.3);
+/* Stop Button Icon (Red) */
+.btn-stop i {
+    color: rgba(255, 51, 51, 0.8);
+    text-shadow: 0 0 5px rgba(255, 51, 51, 0.3);
 }
 
+/* Next Button Icon (Blue) */
+.btn-next i {
+    color: rgba(0, 243, 255, 0.8);
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+}
+
+
+/* --- HOVER EFFECTS: The "Light Glow" --- */
+.btn-control:hover {
+    background: rgba(255, 255, 255, 0.06);
+    /* Slightly lighter glass */
+    border-color: rgba(255, 0, 204, 0.3);
+    /* Pink border reveals itself */
+
+    /* The Glow: Stronger pink inside, soft glow outside */
+    box-shadow:
+        0 0 15px rgba(255, 0, 204, 0.15),
+        inset 0 0 25px rgba(255, 0, 204, 0.1);
+
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255, 0, 204, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-control:hover i {
+    filter: brightness(1.2);
+    transform: scale(1.1);
+}
+
+.btn-control:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Remove old specific button classes styles to unify the Glass Look */
+.btn-start,
+.btn-stop,
 .btn-next {
-    color: var(--neon-blue);
-    border-color: rgba(0, 243, 255, 0.3);
-    background: rgba(0, 243, 255, 0.05);
-    /* Slight tint for next */
+    /* No solid backgrounds anymore */
+}
+
+/* Cleaned up legacy styles */
+/* Slight tint for next */
 }
 
 .btn-start:hover {
