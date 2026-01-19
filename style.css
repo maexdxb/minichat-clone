@@ -167,9 +167,9 @@ video {
     background: #000;
 }
 
-/* Local video: Mirror for selfie effect */
+/* Local video: Removed mirror effect so text in camera is readable */
 #localVideo {
-    transform: scaleX(-1);
+    /* transform: scaleX(-1); */
 }
 
 .video-label {
