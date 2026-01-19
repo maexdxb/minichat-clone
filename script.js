@@ -128,20 +128,17 @@ function setupWebRTCCallbacks() {
         }
 
         // Auto-search for new partner instead of showing "no partner"
-        showNotification('Partner hat getrennt. Suche neuen Partner... 🔍');
+        showNotification('Partner hat getrennt. Klicke auf Weiter.');
 
-        // Automatically find new partner after 1 second
-        setTimeout(() => {
-            if (isActive && webrtcManager) {
-                const userData = {
-                    isGuest: isGuest,
-                    country: selectedCountry,
-                    gender: selectedGender
-                };
-                console.log('🔄 Auto-searching for new partner after disconnect');
-                webrtcManager.findPartner(userData);
-            }
-        }, 1000);
+        // Removed auto-search as per user request
+        if (noPartner) {
+            noPartner.style.display = 'flex';
+        }
+        remoteLoader.style.display = 'none';
+
+        // Show Next Button prominence?
+        // nextButtons.forEach(btn => btn.classList.add('pulse'));
+
 
         toggleReportButton(false);
     };
