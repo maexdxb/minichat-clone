@@ -349,6 +349,22 @@ function stopChat() {
         searchText.textContent = 'Klicke auf Weiter für die nächste Person';
     }
 
+    // Show Start Button again
+    if (btnStart) {
+        btnStart.style.display = 'flex';
+        btnStart.disabled = false;
+    }
+
+    // Disable control buttons
+    stopButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+    nextButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+
     // Show settings again on mobile
     const settingsGroup = document.querySelector('.settings');
     if (settingsGroup) {
@@ -357,7 +373,7 @@ function stopChat() {
 
     isActive = false;
 
-    showNotification('Chat beendet. Klicke Weiter zum Neustart.');
+    showNotification('Chat beendet.');
     console.log('✅ Chat stopped - camera released');
 }
 
