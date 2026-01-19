@@ -1,22 +1,12 @@
 :root {
-    /* DARK NEON THEME */
-    --primary-bg: #050505;
-    /* Deep Black */
-    --secondary-bg: #121212;
-    /* Card Background */
-    --header-bg: #0a0a0a;
-
-    /* NEON ACCENTS */
+    /* DARK & NEON THEME */
+    --bg-center: #000000;
+    --bg-edge: #1a0510;
+    /* Very dark pinkish fade at edges */
     --neon-pink: #ff00cc;
-    --neon-blue: #00f3ff;
-    --neon-red: #ff3333;
-    --neon-green: #00ff9d;
-
-    --neon-glow: 0 0 10px rgba(255, 0, 204, 0.3), 0 0 20px rgba(255, 0, 204, 0.1);
-
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.1);
     --text-white: #ffffff;
-    --text-gray: #aaaaaa;
-    --border-color: #333;
 }
 
 * {
@@ -27,183 +17,194 @@
 }
 
 body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #000;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--text-white);
     height: 100vh;
     height: 100dvh;
     width: 100%;
 
-    /* ESSENTIAL LAYOUT: Flex Column ensures Header -> Chat -> Footer stack correctly */
+    /* BACKGROUND: Dark center, subtle pink edges */
+    background: radial-gradient(circle at center, var(--bg-center) 60%, var(--bg-edge) 100%);
+
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    position: fixed;
-    /* Stops elastic scrolling on iOS */
-
-    /* iOS safe areas */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
 }
 
 /* --- HEADER --- */
 .main-header {
-    height: 50px;
-    background: var(--primary-bg);
+    height: 60px;
     display: flex;
     align-items: center;
     padding: 0 20px;
     justify-content: space-between;
-    border-bottom: 2px solid var(--neon-pink);
-    box-shadow: var(--neon-glow);
     z-index: 50;
+    /* Optional: Glass Header */
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
 }
 
 .logo-container {
+    font-weight: 700;
+    font-size: 1.2rem;
     display: flex;
     align-items: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    margin-right: 20px;
 }
 
 .logo-icon {
-    font-size: 1.5rem;
-    margin-right: 5px;
+    margin-right: 8px;
+    color: var(--neon-pink);
 }
 
-/* Navigation items (Login etc) */
 .main-nav {
-    display: flex;
-    flex: 1;
-}
-
-.nav-item {
-    color: #ccc;
-    text-decoration: none;
-    padding: 0 15px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-}
-
-.nav-item:hover {
-    color: #fff;
-}
-
-.auth-buttons {
     display: flex;
     align-items: center;
     margin-left: auto;
 }
 
-.btn-login,
-.btn-guest {
-    padding: 5px 15px;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-    border: none;
-    margin-left: 10px;
-}
-
-.btn-login {
-    background: #fff;
-    color: #000;
-}
-
-.btn-guest {
-    background: #333;
+.auth-buttons button {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     color: #fff;
-}
-
-/* Online Count */
-.online-counter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: rgba(255, 255, 255, 0.1);
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 20px;
-    margin-right: 15px;
-}
-
-.pulse-dot {
-    width: 8px;
-    height: 8px;
-    background: #4caf50;
-    border-radius: 50%;
-}
-
-.counter-text {
     font-size: 0.9rem;
+    cursor: pointer;
+    margin-left: 10px;
+    backdrop-filter: blur(10px);
 }
 
-
-/* --- MAIN CHAT AREA --- */
+/* --- MAIN CONTENT AREA --- */
+/* Restore original layout logic: Flexbox column taking remaining space */
 .chat-container {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    flex: 1;
-    /* Takes all available space between header and footer */
-    position: relative;
+    padding: 10px;
     overflow: hidden;
-
-    /* NEON FRAME */
-    border: 2px solid var(--neon-pink);
-    box-shadow: 0 0 20px rgba(255, 0, 204, 0.2), inset 0 0 30px rgba(255, 0, 204, 0.1);
-    background: #000;
-    margin: 10px;
-    border-radius: 12px;
+    position: relative;
+    /* NO RED BORDER HERE ANYMORE */
 }
 
+/* VIDEO GRID */
 .video-grid {
-    display: grid;
-    /* Mobile: Stacked vertically, equal height */
-    grid-template-rows: 1fr 1fr;
-    gap: 15px;
-    padding: 15px;
     flex: 1;
-    overflow: hidden;
-    position: relative;
+    /* Fill the space! */
+    display: flex;
+    flex-direction: column;
+    /* Mobile: Stacked */
+    gap: 10px;
     min-height: 0;
-    /* Important for grid within flex */
+    /* Crucial for Scroll/Flex calculation */
 }
 
-/* Desktop Layout */
+/* Desktop: Side by Side */
 @media (min-width: 768px) {
     .video-grid {
-        grid-template-rows: none;
-        grid-template-columns: 1fr 1fr;
+        flex-direction: row;
     }
 }
 
 .video-wrapper {
-    background-color: #000;
-    border-radius: 16px;
+    flex: 1;
+    /* Both videos take equal space */
+    background: #000;
+    border-radius: 18px;
+    /* High Apple-style radius */
     overflow: hidden;
     position: relative;
-
-    /* Inner Neon Glow */
-    box-shadow: inset 0 0 20px rgba(255, 0, 204, 0.2),
-        0 0 10px rgba(255, 0, 204, 0.2);
-    border: 1px solid var(--neon-pink);
+    /* Subtle Glass Border */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
 }
 
 video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    background: #000;
+}
+
+/* --- BUTTONS BAR --- */
+.controls-bar {
+    height: 100px;
+    /* Ample space for buttons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 20px;
+
+    /* NO BORDER TOP, just clean */
+}
+
+/* LIQUID GLASS BUTTONS - APPLE STYLE */
+.btn-control {
+    flex: 1;
+    max-width: 200px;
+    /* Don't get too wide */
+    height: 64px;
+
+    /* The Apple Glass Look */
+    background: rgba(255, 255, 255, 0.1);
+    /* Visible glass */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px;
+    /* Fully rounded pill shape */
+
+    color: #fff;
+    font-weight: 600;
+    font-size: 1rem;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    box-shadow:
+        0 4px 15px rgba(0, 0, 0, 0.3),
+        /* Drop shadow */
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    /* Top shine */
+
+    transition: all 0.2s ease;
+}
+
+.btn-control i {
+    font-size: 1.4rem;
+    margin-bottom: 2px;
+}
+
+/* Hover States */
+.btn-control:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.02);
+    box-shadow:
+        0 8px 25px rgba(255, 0, 204, 0.15),
+        /* Pink Glow on Hover */
+        inset 0 0 0 1px rgba(255, 0, 204, 0.3);
+    /* Pink Rim */
+}
+
+.btn-control:active {
+    transform: scale(0.96);
+}
+
+/* Specific button tint hints */
+.btn-stop i {
+    color: #ff4d4d;
+}
+
+.btn-next i {
+    color: #00e0ff;
 }
 
 /* --- OVERLAYS --- */
@@ -214,37 +215,39 @@ video {
     width: 100%;
     height: 100%;
     display: flex;
-    /* Flex helps center content */
     align-items: center;
     justify-content: center;
     z-index: 10;
-    /* Pointer events handled by JS usually, but here we want controls to work */
 }
 
 .remote-loader.idle {
     background: #000;
     z-index: 20;
-    /* Ensure it covers videos initially */
 }
 
 .loader-content {
-    background: rgba(0, 0, 0, 0.9);
-    padding: 30px 50px;
-    border: 1px solid var(--neon-pink);
-    border-radius: 12px;
-    box-shadow: 0 0 20px var(--neon-pink);
+    background: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 0, 204, 0.2);
     text-align: center;
-    z-index: 30;
+}
+
+.search-text {
+    color: #fff;
+    margin-top: 15px;
+    font-weight: 500;
 }
 
 .spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 0, 204, 0.3);
+    border: 3px solid rgba(255, 255, 255, 0.1);
     border-top-color: var(--neon-pink);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
+    margin: 0 auto;
 }
 
 @keyframes spin {
@@ -253,15 +256,7 @@ video {
     }
 }
 
-.search-text {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--neon-blue);
-    text-shadow: 0 0 5px var(--neon-blue);
-    margin: 0;
-}
-
-/* Local User Overlay (Mute state etc) */
+/* Local video overlay */
 .local-overlay {
     position: absolute;
     top: 0;
@@ -271,256 +266,61 @@ video {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 5;
-    color: #fff;
     pointer-events: none;
-    /* Let clicks pass through */
+    background: rgba(0, 0, 0, 0.6);
 }
 
-/* --- CONTROLS --- */
-/* --- CONTROLS --- */
-.controls-bar {
-    min-height: 80px;
-    padding: 10px 15px;
-    background: #000;
-    border-top: 1px solid rgba(255, 0, 204, 0.2);
-    /* Very subtle pink line */
-    display: flex;
-    gap: 15px;
-    /* More space for glass buttons */
-    align-items: center;
-    overflow-x: auto;
-    z-index: 40;
+/* Remove everything else */
+.controls-bar .control-group {
+    display: none;
 }
 
-.btn-control {
-    flex: 1;
-    height: 60px;
-    min-width: 80px;
+/* Hide old stuff if present in HTML */
 
-    /* LIQUID GLASS STYLE */
-    background: rgba(255, 255, 255, 0.03);
-    /* Extremely subtle transparency */
-    backdrop-filter: blur(10px);
-    /* The Glass Blur */
-    -webkit-backdrop-filter: blur(10px);
-
-    /* Borders: Thin glass edge */
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top: 1px solid rgba(255, 255, 255, 0.15);
-    /* Top highlight */
-    border-radius: 16px;
-    /* Smooth corners */
-
-    /* Text */
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.9rem;
-
-    /* Base Shadow: Subtle Pink inward tint */
-    box-shadow:
-        0 4px 10px rgba(0, 0, 0, 0.5),
-        /* Depth */
-        inset 0 0 20px rgba(255, 0, 204, 0.02);
-    /* Barely visible pink liquid inside */
-
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Icons within buttons */
-.btn-control i {
-    font-size: 1.4rem;
-    margin-bottom: 4px;
-    transition: 0.3s;
-}
-
-/* Stop Button Icon (Red) */
-.btn-stop i {
-    color: rgba(255, 51, 51, 0.8);
-    text-shadow: 0 0 5px rgba(255, 51, 51, 0.3);
-}
-
-/* Next Button Icon (Blue) */
-.btn-next i {
-    color: rgba(0, 243, 255, 0.8);
-    text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
-}
-
-
-/* --- HOVER EFFECTS: The "Light Glow" --- */
-.btn-control:hover {
-    background: rgba(255, 255, 255, 0.06);
-    /* Slightly lighter glass */
-    border-color: rgba(255, 0, 204, 0.3);
-    /* Pink border reveals itself */
-
-    /* The Glow: Stronger pink inside, soft glow outside */
-    box-shadow:
-        0 0 15px rgba(255, 0, 204, 0.15),
-        inset 0 0 25px rgba(255, 0, 204, 0.1);
-
-    color: #fff;
-    text-shadow: 0 0 8px rgba(255, 0, 204, 0.4);
-    transform: translateY(-2px);
-}
-
-.btn-control:hover i {
-    filter: brightness(1.2);
-    transform: scale(1.1);
-}
-
-.btn-control:active {
-    transform: scale(0.96);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-}
-
-/* Remove old specific button classes styles to unify the Glass Look */
-.btn-start,
-.btn-stop,
-.btn-next {
-    /* No solid backgrounds anymore */
-}
-
-/* Cleaned up legacy styles */
-/* Slight tint for next */
-}
-
-.btn-start:hover {
-    box-shadow: 0 0 15px var(--neon-green);
-    border-color: var(--neon-green);
-}
-
-.btn-stop:hover {
-    box-shadow: 0 0 15px var(--neon-red);
-    border-color: var(--neon-red);
-}
-
-.btn-next:hover {
-    box-shadow: 0 0 15px var(--neon-blue);
-    border-color: var(--neon-blue);
-}
-
-.btn-control:active {
-    transform: scale(0.96);
-}
-
-/* --- SETTINGS (Country, Gender) --- */
-.control-group {
-    display: flex;
-    gap: 10px;
-    margin-right: 15px;
-}
-
-.country,
-.gender {
-    width: 60px;
-    height: 60px;
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
-
-.flag-icon img {
-    width: 30px;
-}
-
-.gender i {
-    font-size: 1.5rem;
-    color: var(--neon-blue);
-}
-
-/* --- FOOTER (Chat Input) --- */
-.chat-footer {
-    height: 60px;
-    background: #000;
-    border-top: 1px solid #333;
-    display: flex;
-    align-items: center;
-    padding: 0 10px;
-    z-index: 40;
-}
-
-.chat-input-container {
-    display: flex;
-    width: 100%;
-    background: #111;
-    border-radius: 20px;
-    padding: 5px 15px;
-    border: 1px solid #333;
-}
-
-.chat-input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: #fff;
-    outline: none;
-    height: 40px;
-}
-
-.emoji-btn {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
-
-/* Report Overlay Button */
+/* Toggle for Report Button in Video */
 .btn-report-overlay {
     position: absolute;
     top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.6);
+    right: 10px;
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
-    border: 1px solid #ff3333;
-    padding: 5px 10px;
-    border-radius: 4px;
+    border: 1px solid rgba(255, 50, 50, 0.5);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    font-size: 0.8rem;
-    z-index: 20;
-    opacity: 0;
-    transition: opacity 0.3s;
+    z-index: 50;
+    opacity: 0.6;
+    transition: 0.3s;
 }
 
-.video-wrapper:hover .btn-report-overlay {
+.btn-report-overlay:hover {
     opacity: 1;
+    background: rgba(255, 50, 50, 0.2);
 }
 
 /* Modals */
 .modal {
-    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
+    display: none;
     justify-content: center;
     align-items: center;
 }
 
 .modal-content {
-    background: #111;
+    background: #1a1a1a;
     padding: 20px;
     border-radius: 12px;
-    border: 1px solid var(--neon-pink);
-    box-shadow: 0 0 20px var(--neon-pink);
+    border: 1px solid #333;
     color: #fff;
-    text-align: center;
     max-width: 90%;
 }
