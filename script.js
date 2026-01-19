@@ -405,11 +405,17 @@ function stopChat() {
 
 // Skip to next partner
 async function skipPartner() {
+    console.log('⏭️ skipPartner called, isActive:', isActive);
+
     // Check ban status before skipping
-    if (await performBanCheck()) return;
+    console.log('🛡️ Checking ban status...');
+    const isBanned = await performBanCheck();
+    console.log('🛡️ Ban check result:', isBanned);
+    if (isBanned) return;
 
     if (!isActive) {
         // Start chat if not active
+        console.log('▶️ Chat not active, calling startChat()...');
         startChat();
         return;
     }
