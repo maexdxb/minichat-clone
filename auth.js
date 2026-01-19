@@ -177,8 +177,7 @@ class AuthManager {
         const onlineCounter = headerRight.querySelector('.online-counter');
 
         headerRight.innerHTML = `
-            <button class="btn-guest"><i class="fa-solid fa-user-secret"></i> Als Gast fortfahren</button>
-            <button class="btn-login"><i class="fa-solid fa-user"></i> Anmelden</button>
+            <button class="btn-login"><i class="fa-solid fa-user"></i> Mit Google anmelden</button>
         `;
 
         // Re-add online counter
@@ -187,15 +186,6 @@ class AuthManager {
         }
 
         // Re-attach event listeners
-        const btnGuest = document.querySelector('.btn-guest');
-        if (btnGuest) {
-            btnGuest.addEventListener('click', () => {
-                // Call continueAsGuest from global scope
-                if (typeof continueAsGuest === 'function') {
-                    continueAsGuest();
-                }
-            });
-        }
 
         const btnLogin = document.querySelector('.btn-login');
         if (btnLogin) {
