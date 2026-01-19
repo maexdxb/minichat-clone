@@ -10,6 +10,8 @@
 :root {
     --bg-black: #000000;
     --neon-pink: #ff00cc;
+    --neon-pink-soft: rgba(255, 0, 204, 0.4);
+    --neon-pink-intense: rgba(255, 0, 204, 0.8);
     --text-white: #ffffff;
 }
 
@@ -23,9 +25,8 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-
-    /* Background Gradient for overall feel */
-    background: radial-gradient(circle at 50% 120%, #200515, #000 60%);
+    /* Deeper Black with Neon Hints */
+    background: radial-gradient(circle at 60% 90%, #1a0010, #000 50%);
 }
 
 /* --- LIQUID GLASS UTILITY --- */
@@ -33,17 +34,10 @@ body {
     background: rgba(255, 255, 255, 0.03);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow:
-        0 4px 30px rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(255, 0, 204, 0.1);
-    border-radius: 16px;
+    border: 1px solid rgba(255, 0, 204, 0.2);
+    box-shadow: 0 0 15px rgba(255, 0, 204, 0.15);
+    border-radius: 20px;
     transition: all 0.3s ease;
-}
-
-.liquid-glass-pink:hover {
-    box-shadow: 0 0 30px rgba(255, 0, 204, 0.3);
-    border-color: rgba(255, 0, 204, 0.4);
 }
 
 /* --- HEADER --- */
@@ -53,48 +47,64 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 25px;
+    padding: 0 20px;
     z-index: 100;
+
+    /* Neon Header Border */
+    border-bottom: 2px solid var(--neon-pink);
+    box-shadow: 0 0 25px var(--neon-pink-soft);
+    background: #000;
 }
 
+/* LOGO - Cursive & Neon */
 .logo-container {
-    font-weight: 900;
-    font-size: 1.5rem;
+    font-family: 'Satisfy', cursive;
+    /* Handwritten Style */
+    font-size: 2.2rem;
     display: flex;
     align-items: center;
-    gap: 10px;
-    letter-spacing: -1px;
+    gap: 8px;
+    color: #fff;
+    text-shadow: 0 0 10px #ff00cc, 0 0 20px #ff00cc, 0 0 30px #ff00cc;
+    /* Proper Neon Glow */
 }
 
+.logo-container span {
+    margin-top: 5px;
+}
+
+/* Optical adjustment */
 .logo-icon {
+    font-size: 1.8rem;
     color: #fff;
-    text-shadow: 0 0 10px var(--neon-pink);
+    text-shadow: inherit;
 }
 
 .header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 /* Header Pills */
 .online-counter,
 .btn-login {
-    padding: 8px 16px;
+    padding: 6px 14px;
     display: flex;
     align-items: center;
     gap: 8px;
+    font-size: 0.85rem;
     font-weight: 600;
-    font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.9);
-    border-radius: 30px;
-    /* Pill shape */
-    cursor: pointer;
+    border-radius: 20px;
+    background: rgba(255, 0, 204, 0.15);
+    border: 1px solid rgba(255, 0, 204, 0.3);
+    box-shadow: 0 0 10px rgba(255, 0, 204, 0.2);
 }
 
 .pulse-dot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: #0f0;
     border-radius: 50%;
     box-shadow: 0 0 8px #0f0;
@@ -118,10 +128,9 @@ body {
     background: #000;
 }
 
-@media (max-width: 600px) {
-    .video-grid {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
+@media (max-width: 768px) {
+    #mobile-hide-controls .video-grid {
+        height: 100%;
     }
 }
 
@@ -132,11 +141,29 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #111;
 }
 
-.video-wrapper:last-child {
-    border-right: none;
+/* NEON SEPARATOR */
+@media (min-width: 768px) {
+    .video-wrapper:first-child {
+        border-right: 3px solid var(--neon-pink);
+        box-shadow: 5px 0 30px var(--neon-pink-soft);
+        z-index: 10;
+    }
+}
+
+@media (max-width: 767px) {
+    .video-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    .video-wrapper:first-child {
+        border-bottom: 3px solid var(--neon-pink);
+        box-shadow: 0 5px 30px var(--neon-pink-soft);
+        z-index: 10;
+    }
 }
 
 video {
@@ -151,13 +178,14 @@ video {
     left: 10px;
     z-index: 5;
     background: rgba(0, 0, 0, 0.5);
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    color: #aaa;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* OVERLAYS - CENTERED */
+/* OVERLAYS */
 .local-overlay,
 .remote-loader {
     position: absolute;
@@ -168,17 +196,8 @@ video {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Center Content */
     z-index: 10;
     pointer-events: none;
-}
-
-.local-overlay .overlay-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    color: rgba(255, 255, 255, 0.5);
 }
 
 .remote-loader.idle {
@@ -188,17 +207,19 @@ video {
 }
 
 .loader-content {
-    /* Liquid Pink Box in Center */
-    padding: 40px;
-    min-width: 280px;
+    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 0, 204, 0.3);
+    box-shadow: 0 0 20px rgba(255, 0, 204, 0.2);
 }
 
 .search-text {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     margin-top: 20px;
     text-transform: uppercase;
@@ -209,10 +230,10 @@ video {
 .spinner {
     width: 50px;
     height: 50px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: #fff;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--neon-pink);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
     box-shadow: 0 0 15px var(--neon-pink);
 }
 
@@ -222,7 +243,6 @@ video {
     }
 }
 
-/* REPORT BUTTON - WHITE & VISIBLE */
 .btn-report-overlay {
     position: absolute;
     top: 15px;
@@ -231,7 +251,6 @@ video {
     height: 44px;
     background: rgba(0, 0, 0, 0.6);
     border: 2px solid #fff;
-    /* High contrast */
     border-radius: 50%;
     color: #fff;
     display: flex;
@@ -241,18 +260,11 @@ video {
     cursor: pointer;
     pointer-events: auto;
     z-index: 50;
-    transition: 0.2s;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-}
-
-.btn-report-overlay:hover {
-    background: #ff3333;
-    border-color: #ff3333;
-    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 
-/* --- CONTROLS BAR --- */
+/* --- CONTROLS BAR (Desktop Only) --- */
 .controls-bar {
     min-height: 140px;
     padding: 20px 40px;
@@ -261,10 +273,15 @@ video {
     gap: 40px;
     z-index: 50;
     background: #000;
-    /* User requested same "pink style" bottom */
-    /* We can apply a subtle gradient or shadow */
-    box-shadow: 0 -5px 30px rgba(255, 0, 204, 0.05);
-    /* Very subtle pink ambient light upwards */
+    border-top: 2px solid rgba(255, 0, 204, 0.2);
+    box-shadow: 0 -5px 30px rgba(255, 0, 204, 0.1);
+}
+
+/* MOBILE HIDE CONTROLS */
+@media (max-width: 768px) {
+    .controls-bar {
+        display: none !important;
+    }
 }
 
 .control-group {
@@ -272,80 +289,60 @@ video {
     gap: 20px;
 }
 
-/* BUTTONS */
+/* Large Buttons */
 .btn-control {
-    width: 150px;
-    height: 110px;
+    width: 140px;
+    height: 100px;
     background: rgba(255, 255, 255, 0.03);
-    /* Liquid base */
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
     border-radius: 16px;
-    cursor: pointer;
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
     gap: 8px;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: 0.2s;
 }
 
-.btn-start {
-    /* Blue/Green Hints */
-    box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+.btn-control:hover {
+    transform: scale(1.02);
 }
 
 .btn-start:hover {
-    background: rgba(0, 243, 255, 0.15);
-    box-shadow: 0 0 25px rgba(0, 243, 255, 0.3);
-    border-color: rgba(0, 243, 255, 0.5);
-    color: #fff;
-}
-
-.btn-stop {
-    /* Red/Pink Hints */
-    box-shadow: 0 0 15px rgba(255, 51, 51, 0.1);
+    border-color: #0ff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
 }
 
 .btn-stop:hover {
-    background: rgba(255, 51, 51, 0.15);
-    box-shadow: 0 0 25px rgba(255, 51, 51, 0.3);
-    border-color: rgba(255, 51, 51, 0.5);
-    color: #fff;
+    border-color: #f00;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
 }
 
-.btn-control i {
-    font-size: 2.2rem;
-}
-
-.btn-text {
-    font-weight: 800;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-}
-
-/* DISCLAIMER */
 .disclaimer-text {
     flex: 1;
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.4);
     font-size: 0.85rem;
-    line-height: 1.5;
-    /* Use liquid box for text too? Maybe too much. Keep clean text. */
 }
 
-/* FOOTER */
+
+/* --- FOOTER --- */
 .chat-footer {
-    padding: 0 40px 30px 40px;
+    padding: 15px 20px 20px 20px;
     background: #000;
+    /* Footer needs to stay at bottom on mobile */
+    z-index: 100;
 }
 
 .chat-input-container {
     height: 50px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--neon-pink);
+    /* Neon Border */
+    box-shadow: 0 0 15px var(--neon-pink-soft), inset 0 0 10px rgba(255, 0, 204, 0.1);
+    border-radius: 25px;
     display: flex;
     align-items: center;
     padding: 0 20px;
@@ -353,8 +350,8 @@ video {
 }
 
 .chat-input-container:focus-within {
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 15px rgba(255, 0, 204, 0.2);
+    box-shadow: 0 0 30px var(--neon-pink-intense), inset 0 0 20px rgba(255, 0, 204, 0.2);
+    border-color: #ff33ff;
 }
 
 .chat-input {
@@ -368,13 +365,9 @@ video {
 .send-btn {
     background: none;
     border: none;
-    color: #666;
-    font-size: 1.2rem;
-    cursor: pointer;
-}
-
-.send-btn:hover {
     color: var(--neon-pink);
+    font-size: 1.4rem;
+    cursor: pointer;
 }
 
 /* MODALS */
@@ -397,5 +390,7 @@ video {
     width: 400px;
     max-width: 90%;
     text-align: center;
-    /* Liquid Style applied via class in HTML */
+    border: 2px solid var(--neon-pink);
+    box-shadow: 0 0 30px var(--neon-pink-soft);
+    border-radius: 20px;
 }

@@ -589,7 +589,8 @@ window.addEventListener('beforeunload', () => {
 
 // Setup Swipe Gestures for Mobile
 function setupSwipeGestures() {
-    const videoStage = document.querySelector('.video-stage');
+    // FIX: use .chat-container or .video-grid as stage
+    const videoStage = document.querySelector('.chat-container') || document.querySelector('.video-grid');
 
     if (videoStage) {
         new SwipeHandler(videoStage, {
