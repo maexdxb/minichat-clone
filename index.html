@@ -67,6 +67,11 @@
                 <p>Kein Partner gefunden</p>
                 <button class="btn-retry" onclick="skipPartner()">Wiederholen</button>
             </div>
+
+            <!-- Report Button -->
+            <button id="btnReport" class="btn-report-overlay" title="Melden">
+                <i class="fas fa-flag"></i>
+            </button>
         </div>
     </main>
 
@@ -150,12 +155,37 @@
         </div>
     </div>
 
-    <script src="config.js?v=26"></script>
-    <script src="auth.js?v=26"></script>
-    <script src="swipe.js?v=26"></script>
-    <script src="webrtc.js?v=26"></script>
-    <script src="script.js?v=26"></script>
-    <script src="report.js?v=26"></script>
+    <!-- Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content report-content">
+            <span class="close-report-modal" onclick="closeReportModal()">&times;</span>
+            <h2><i class="fas fa-exclamation-triangle"></i> Missbrauch melden</h2>
+
+            <div class="report-preview">
+                <img id="reportScreenshot" src="" alt="Screenshot Beweis"
+                    style="width: 100%; border-radius: 8px; margin-bottom: 15px; display: none;">
+            </div>
+
+            <p>Wollen Sie diesen Benutzer wirklich wegen unangemessenem Verhalten melden?</p>
+            <p class="small-text" style="font-size: 0.8rem; color: #888; margin-top: 5px;">Ein Screenshot des aktuellen
+                Videobilds wird automatisch angehängt.</p>
+
+            <div class="modal-buttons" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button class="btn-cancel-report" onclick="closeReportModal()"
+                    style="padding: 10px 20px; border-radius: 5px; border: 1px solid #555; background: transparent; color: white; cursor: pointer;">Abbrechen</button>
+                <button id="btnConfirmReport"
+                    style="padding: 10px 20px; border-radius: 5px; border: none; background: #dc3545; color: white; cursor: pointer;">Melden</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="report.js?v=27"></script>
+    <script src="config.js?v=27"></script>
+    <script src="auth.js?v=27"></script>
+    <script src="swipe.js?v=27"></script>
+    <script src="webrtc.js?v=27"></script>
+    <script src="script.js?v=27"></script>
+    <script src="report.js?v=27"></script>
 </body>
 
 </html>

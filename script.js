@@ -136,6 +136,8 @@ function setupWebRTCCallbacks() {
                 webrtcManager.findPartner(userData);
             }
         }, 1000);
+
+        toggleReportButton(false);
     };
 
     // Remote stream received
@@ -148,6 +150,7 @@ function setupWebRTCCallbacks() {
         // Show remote video
         remoteVideo.srcObject = stream;
         remoteVideo.style.display = 'block';
+        toggleReportButton(true);
         noPartner.style.display = 'none';
 
         console.log('✅ Remote video should now be visible');
@@ -411,6 +414,7 @@ function stopChat() {
     localOverlay.style.display = 'flex';
     remoteLoader.style.display = 'flex';
     noPartner.style.display = 'none';
+    toggleReportButton(false);
 
     // Show idle state - not searching
     const remoteLoaderEl = document.querySelector('.remote-loader');
@@ -460,6 +464,7 @@ function skipPartner() {
     remoteVideo.style.display = 'none';
     remoteLoader.style.display = 'flex';
     noPartner.style.display = 'none';
+    toggleReportButton(false);
 
     // Remove idle class - now searching
     const remoteLoaderEl = document.querySelector('.remote-loader');
@@ -726,4 +731,12 @@ function showPauseScreen() {
             }, 300);
         }
     });
+}
+
+// Helper to toggle report button
+function toggleReportButton(show) {
+    const btn = document.getElementById('btnReport');
+    if (btn) {
+        btn.style.display = show ? 'flex' : 'none';
+    }
 }

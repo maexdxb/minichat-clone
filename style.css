@@ -1237,3 +1237,30 @@ body {
         transform: scale(1.1);
     }
 }
+/* Report Button Overlay */
+.btn-report-overlay {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 20;
+    transition: all 0.2s ease;
+    font-size: 1.1rem;
+}
+
+.btn-report-overlay:hover {
+    background-color: rgba(220, 53, 69, 0.8);
+    color: white;
+    border-color: #dc3545;
+    transform: scale(1.1);
+}
+
