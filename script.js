@@ -730,39 +730,22 @@ async function performBanCheck() {
     return false; // Not banned
 }
 
-// Start Chat Function (Fixed: Optimistic UI + Direct Access)
+// Start Chat Function (Reverted to Stable Version)
 async function startChat() {
-    console.log('🎬 startChat called');
+    console.log('🎬 Starting chat...');
 
-    // Check ban status first
+    // Check ban status first (with timeout protection)
     if (await performBanCheck()) return;
 
-    // Optimistic UI: Hide overlay immediately so user knows something is happening
-    if (localOverlay) localOverlay.style.display = 'none';
-    if (localVideo) localVideo.style.display = 'block';
-
-    showNotification('Starte Kamera...');
-
-    // Request permissions DIRECTLY
+    // Request permissions first
     try {
-        console.log('📹 Requesting UserMedia...');
+        // 1. Get Local Stream via Manager
+        const stream = await webrtcManager.startLocalStream();
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: {
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: true
-        });
-
-        console.log('✅ Stream acquiring success:', stream.id);
-
-        // Show local video
-        if (localVideo) {
-            localVideo.srcObject = stream;
-            // Explicitly play to prevent "frozen first frame" or black screen
-            localVideo.play().catch(e => console.error('Play error:', e));
-        }
+        // 2. Show local video
+        localVideo.srcObject = stream;
+        localVideo.style.display = 'block';
+        localOverlay.style.display = 'none';
 
         isActive = true;
 
@@ -780,11 +763,8 @@ async function startChat() {
             btnStart.style.display = 'none'; // Hide start button
         }
 
-        // Initialize WebRTC connection
+        // 3. Find Partner
         if (webrtcManager) {
-            // Set stream in manager manually
-            webrtcManager.localStream = stream;
-
             const userData = {
                 isGuest: isGuest,
                 country: selectedCountry,
@@ -795,11 +775,11 @@ async function startChat() {
         }
 
         // Show Remote Loader (Waiting for partner)
-        if (remoteLoader) remoteLoader.style.display = 'flex';
-        if (noPartner) noPartner.style.display = 'none';
+        remoteLoader.style.display = 'flex';
+        noPartner.style.display = 'none';
 
         // Remove idle class
-        if (remoteLoader) remoteLoader.classList.remove('idle');
+        remoteLoader.classList.remove('idle');
         const searchText = document.querySelector('.search-text');
         if (searchText) searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
 
@@ -813,11 +793,6 @@ async function startChat() {
 
     } catch (error) {
         console.error('Error accessing media devices:', error);
-
-        // Restore overlay if we failed
-        if (localOverlay) localOverlay.style.display = 'flex';
-        if (localVideo) localVideo.style.display = 'none';
-
         alert('Fehler: Könnte nicht auf Kamera/Mikrofon zugreifen: ' + error.message);
         isActive = false;
     }
