@@ -593,10 +593,14 @@ function setupSwipeGestures() {
     if (videoStage) {
         new SwipeHandler(videoStage, {
             onSwipeLeft: () => {
-                // Swipe LEFT = Next partner (inverted)
-                if (isActive) {
-                    console.log('👈 Swipe left detected - Next partner');
+                // Swipe LEFT = Next partner (or start if inactive)
+                console.log('👈 Swipe left detected');
 
+                if (!isActive) {
+                    // Start chat if not active
+                    console.log('▶️ Starting chat via swipe...');
+                    skipPartner(); // This will call startChat if not active
+                } else {
                     // Show swipe animation
                     showSwipeAnimation('left');
 
@@ -610,7 +614,7 @@ function setupSwipeGestures() {
                 }
             },
             onSwipeRight: () => {
-                // Swipe RIGHT = Stop (inverted)
+                // Swipe RIGHT = Stop (only if active)
                 if (isActive) {
                     console.log('👉 Swipe right detected - Stop');
 
