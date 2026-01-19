@@ -68,27 +68,11 @@ class WebRTCManager {
     }
 
     setupSocketListeners() {
-        // Match found
-        this.socket.on('match-found', async (data) => {
-            console.log('🎉 MATCH FOUND!', data);
+        // Match found (New)
+        this.socket.on('partner-found', (data) => this.handleMatchFound(data, 'partner-found'));
 
-            // Store Partner ID globally for reports
-            this.partnerSupabaseId = data.partnerSupabaseId;
-            // Brute force global store
-            window.CURRENT_PARTNER_ID = data.partnerSupabaseId;
-            console.log('Set CURRENT_PARTNER_ID to:', window.CURRENT_PARTNER_ID);
-
-            this.isSearching = false;
-            this.isConnected = true;
-
-            if (data.initiator) {
-                await this.createOffer();
-            }
-
-            if (this.onPartnerFound) {
-                this.onPartnerFound(data.partnerId);
-            }
-        });
+        // Match found (Legacy/Fallback)
+        this.socket.on('match-found', (data) => this.handleMatchFound(data, 'match-found'));
 
         // Partner disconnected
         this.socket.on('partner-disconnected', () => {
@@ -123,6 +107,27 @@ class WebRTCManager {
         this.socket.on('online-count', (count) => {
             if (this.onOnlineCount) this.onOnlineCount(count);
         });
+    }
+
+    async handleMatchFound(data, eventName) {
+        console.log(`🎉 MATCH FOUND (${eventName})!`, data);
+
+        // Store Partner ID globally for reports
+        this.partnerSupabaseId = data.partnerSupabaseId;
+        // Brute force global store
+        window.CURRENT_PARTNER_ID = data.partnerSupabaseId;
+        console.log('Set CURRENT_PARTNER_ID to:', window.CURRENT_PARTNER_ID);
+
+        this.isSearching = false;
+        this.isConnected = true;
+
+        if (data.initiator) {
+            await this.createOffer();
+        }
+
+        if (this.onPartnerFound) {
+            this.onPartnerFound(data.partnerId);
+        }
     }
 
     // Start local video stream - ROBUST VERSION
@@ -261,11 +266,17 @@ class WebRTCManager {
     startSearch() {
         if (this.socket) {
             this.isSearching = true;
-            this.socket.emit('start-search', {
-                country: 'all', // Simplified
+
+            const searchData = {
+                country: 'all',
                 gender: 'all'
-            });
-            console.log('🔎 Search started...');
+            };
+
+            // Emit BOTH events to be safe with server versions
+            this.socket.emit('find-partner', searchData);
+            this.socket.emit('start-search', searchData);
+
+            console.log('🔎 Search started (sent both find-partner and start-search)...');
         }
     }
 

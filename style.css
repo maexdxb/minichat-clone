@@ -48,8 +48,9 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     z-index: 100;
-    border-bottom: 2px solid var(--neon-pink);
-    box-shadow: 0 0 25px var(--neon-pink-soft);
+    /* Removed border and shadow as per request */
+    border-bottom: none;
+    box-shadow: none;
     background: #000;
 }
 
