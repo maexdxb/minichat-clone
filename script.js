@@ -192,6 +192,13 @@ window.startChat = async function () {
         return;
     }
 
+    // ENFORCE LOGIN
+    if (!authManager || !authManager.isLoggedIn()) {
+        alert('Bitte melde dich zuerst an!');
+        if (authManager) authManager.signInWithGoogle();
+        return;
+    }
+
     try {
         isActive = true;
         updateUIState('searching');
