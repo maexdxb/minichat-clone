@@ -50,6 +50,12 @@ class AuthManager {
                 }
             });
 
+            // Initialize UserManagement for ban checks
+            if (typeof UserManagement !== 'undefined') {
+                window.userManagement = new UserManagement(this.supabase);
+                console.log('✅ UserManagement initialized');
+            }
+
             this.initialized = true;
 
         } catch (error) {
