@@ -163,16 +163,9 @@ body {
 video {
     width: 100%;
     height: 100%;
-    /* Mobile: Cover for immersive experience */
     object-fit: cover;
+    object-position: center center;
     background: #000;
-}
-
-/* Desktop: Contain to show full vertical video from mobile */
-@media (min-width: 769px) {
-    video {
-        object-fit: contain;
-    }
 }
 
 .video-label {
