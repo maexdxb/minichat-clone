@@ -163,7 +163,9 @@ body {
 video {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    /* Changed from cover to contain to prevent cropping (zoomed in effect) */
+    object-fit: contain;
+    background: #000;
 }
 
 .video-label {
