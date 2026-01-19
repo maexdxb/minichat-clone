@@ -713,38 +713,54 @@
             };
         }
 
-        // New function to handle banning with evidence
-        let currentEvidence = null;
+        // Initialize standard confirmBan
+        window.confirmBan = async function () {
+            const type = document.getElementById('ban-type').value;
+            const hours = parseInt(document.getElementById('ban-hours').value);
+            const reason = document.getElementById('ban-reason').value;
+
+            if (!reason) return alert('Grund fehlt!');
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            let res;
+
+            // Log for debugging
+            console.log(`🔨 Banning ${currentUserId} (${type}), evidence: ${!!currentEvidence}`);
+
+            if (type === 'temp') {
+                res = await userManagement.banUserTemporary(currentUserId, hours, reason, session.user.id, currentEvidence);
+            } else {
+                res = await userManagement.banUserPermanent(currentUserId, reason, session.user.id, currentEvidence);
+            }
+
+            if (res.success) {
+                closeModal();
+                loadUsers();
+                if (document.getElementById('review-modal').style.display === 'flex') {
+                    document.getElementById('review-modal').style.display = 'none';
+                    markReportReviewed();
+                }
+                alert('Nutzer erfolgreich gesperrt!');
+            } else {
+                alert('Error: ' + res.error.message);
+                console.error(res.error);
+            }
+        }
+
         window.openBanModalFromReport = function (userId, type, screenshot) {
             currentUserId = userId;
-            currentEvidence = screenshot;
+            currentEvidence = screenshot; // Set global evidence
             document.getElementById('ban-type').value = type;
             document.getElementById('hours-group').style.display = type === 'temp' ? 'block' : 'none';
             document.getElementById('ban-reason').value = 'Verstoß gegen Nutzungsbedingungen (siehe Beweis)';
             document.getElementById('ban-modal').style.display = 'flex';
+        }
 
-            // Override confirmBan to include evidence
-            window.confirmBan = async function () {
-                const type = document.getElementById('ban-type').value;
-                const hours = parseInt(document.getElementById('ban-hours').value);
-                const reason = document.getElementById('ban-reason').value;
-
-                if (!reason) return alert('Grund fehlt!');
-
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                let res;
-                if (type === 'temp') res = await userManagement.banUserTemporary(currentUserId, hours, reason, session.user.id, currentEvidence);
-                else res = await userManagement.banUserPermanent(currentUserId, reason, session.user.id, currentEvidence);
-
-                if (res.success) {
-                    closeModal();
-                    loadUsers();
-                    document.getElementById('review-modal').style.display = 'none';
-                    markReportReviewed();
-                    alert('Nutzer erfolgreich gesperrt!');
-                }
-                else alert('Error: ' + res.error.message);
-            }
+        // Reset evidence when closing modal normally
+        const originalCloseModal = window.closeModal;
+        window.closeModal = function () {
+            currentEvidence = null; // Clear evidence
+            originalCloseModal();
         }
 
         window.markReportReviewed = async function () {
