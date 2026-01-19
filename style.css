@@ -163,10 +163,17 @@ body {
 video {
     width: 100%;
     height: 100%;
-    /* Show complete video - no cropping, same view on all devices */
-    object-fit: contain;
+    /* Mobile: Cover for good preview */
+    object-fit: cover;
     object-position: center center;
     background: #000;
+}
+
+/* Desktop: Contain to show exact mobile frame without additional cropping */
+@media (min-width: 769px) {
+    video {
+        object-fit: contain;
+    }
 }
 
 .video-label {
