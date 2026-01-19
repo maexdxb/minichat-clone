@@ -402,12 +402,20 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('users-table').style.display = 'block';
 
-            // Calculate active users (seen in last 2 minutes)
-            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+            // Calculate active users (seen in last 15 minutes)
+            const activeThreshold = new Date(Date.now() - 15 * 60 * 1000);
+
+            // --- DEBUG ---
+            log('🕒 Zeit-Check: ' + new Date().toLocaleTimeString());
+            if (users.length > 0) {
+                const u = users[0];
+                log(`👤 User ${u.email}: last_seen=${u.last_seen}`);
+            }
+            // --- DEBUG ---
 
             const onlineUsers = users.filter(u => {
                 const lastSeen = u.last_seen ? new Date(u.last_seen) : new Date(0);
-                return lastSeen > twoMinutesAgo;
+                return lastSeen > activeThreshold;
             });
 
             // Update stats
