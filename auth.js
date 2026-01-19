@@ -168,11 +168,11 @@ class AuthManager {
         // Show notification
         showNotification(`Willkommen zurück, ${userName}! 👋`);
 
-        // Auto-start chat for logged-in user
-        if (typeof startChat === 'function') {
-            console.log('🚀 Auto-starting chat for logged-in user...');
-            setTimeout(() => startChat(), 500); // Small delay to ensure UI is ready
-        }
+        // Auto-start removed as per user request
+        // if (typeof startChat === 'function') {
+        //     console.log('🚀 Auto-starting chat for logged-in user...');
+        //     setTimeout(() => startChat(), 500);
+        // }
     }
 
     // Update UI for logged out user
