@@ -267,4 +267,4 @@ class AuthManager {
 }
 
 // Create global auth manager instance
-const authManager = new AuthManager();
+window.authManager = new AuthManager();
