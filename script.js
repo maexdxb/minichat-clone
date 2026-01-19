@@ -62,6 +62,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Setup Event Listeners IMMEDIATELY so buttons work even if network hangs
+    setupEventListeners();
+    setupSwipeGestures();
+    animateOnlineCount();
+
     console.log('✅ All critical DOM elements found');
     // Initialize authentication
     await authManager.init();
@@ -72,10 +77,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         userManagement = new UserManagement(authManager.supabase);
     }
 
-    // Initialize WebRTC Manager
+    // Initialize WebRTC Manager (with timeout)
     try {
         webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
-        await webrtcManager.init();
+
+        // Race condition: Timeout after 3 seconds if server doesn't respond
+        const initPromise = webrtcManager.init();
+        const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Connection timeout')), 3000)
+        );
+
+        await Promise.race([initPromise, timeoutPromise]);
+
         console.log('✅ WebRTC Manager initialized');
 
         // Setup WebRTC callbacks
@@ -83,12 +96,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     } catch (error) {
         console.error('❌ Failed to initialize WebRTC:', error);
-        showNotification('⚠️ Verbindung zum Server fehlgeschlagen. Bitte später versuchen.');
+        showNotification('⚠️ Verbindung wird im Hintergrund aufgebaut...');
+        // We still allow operation; socket might connect later
+        setupWebRTCCallbacks(); // Setup callbacks anyway just in case
     }
-
-    setupEventListeners();
-    setupSwipeGestures();
-    animateOnlineCount();
 });
 
 // Setup WebRTC Callbacks
