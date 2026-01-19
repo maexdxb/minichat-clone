@@ -1,0 +1,18 @@
+/* Report Modal specific styles */
+.btn-report-overlay {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.btn-report-overlay:hover {
+    opacity: 1;
+}
+
+/* Ensure modal is above everything */
+#reportModal {
+    z-index: 9999;
+}

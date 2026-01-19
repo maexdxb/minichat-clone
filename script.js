@@ -205,9 +205,33 @@ function setupWebRTCCallbacks() {
 
 // Event Listeners
 function setupEventListeners() {
+    console.log('🔌 Setting up event listeners...');
+
     stopButtons.forEach(btn => btn.addEventListener('click', stopChat));
-    nextButtons.forEach(btn => btn.addEventListener('click', skipPartner));
-    if (btnStart) btnStart.addEventListener('click', startChat);
+
+    if (btnStart) {
+        // Remove existing listeners if any (clone node trick usually clears them, but simple add is fine here)
+        btnStart.onclick = null; // Clear old inline handlers
+        btnStart.addEventListener('click', (e) => {
+            console.log('🖱️ Start Button CLICKED');
+            startChat();
+        });
+        console.log('✅ Listener attached to btnStart');
+    } else {
+        console.error('❌ btnStart not found during setupEventListeners');
+    }
+
+    if (btnNext) btnNext.addEventListener('click', skipPartner); // Fallback for single button
+
+    // Add listeners to ALL next buttons
+    nextButtons.forEach(btn => {
+        btn.addEventListener('click', skipPartner);
+    });
+
+    // Global click debugger
+    document.body.addEventListener('click', (e) => {
+        console.log('Body click target:', e.target.tagName, e.target.className);
+    });
 
     // Initial button states
     stopButtons.forEach(btn => {
