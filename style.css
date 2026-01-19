@@ -1,31 +1,26 @@
-:root {
-    /* DARK & NEON THEME */
-    --bg-center: #000000;
-    --bg-edge: #1a0510;
-    /* Very dark pinkish fade at edges */
-    --neon-pink: #ff00cc;
-    --glass-bg: rgba(255, 255, 255, 0.08);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text-white: #ffffff;
-}
-
+/* UNIVERSAL RESET */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
+
+:root {
+    --bg-black: #000000;
+    --neon-pink: #ff00cc;
+    --text-white: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.05);
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-black);
     color: var(--text-white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     height: 100vh;
     height: 100dvh;
     width: 100%;
-
-    /* BACKGROUND: Dark center, subtle pink edges */
-    background: radial-gradient(circle at center, var(--bg-center) 60%, var(--bg-edge) 100%);
-
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -34,26 +29,28 @@ body {
 /* --- HEADER --- */
 .main-header {
     height: 60px;
+    min-height: 60px;
+    background: #000;
+    border-bottom: 2px solid var(--neon-pink);
     display: flex;
     align-items: center;
-    padding: 0 20px;
     justify-content: space-between;
-    z-index: 50;
-    /* Optional: Glass Header */
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    padding: 0 15px;
+    z-index: 100;
 }
 
 .logo-container {
-    font-weight: 700;
+    font-weight: 800;
     font-size: 1.2rem;
     display: flex;
     align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
 }
 
 .logo-icon {
-    margin-right: 8px;
     color: var(--neon-pink);
+    font-size: 1.4rem;
 }
 
 .main-nav {
@@ -62,152 +59,110 @@ body {
     margin-left: auto;
 }
 
-.auth-buttons button {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    color: #fff;
-    padding: 8px 16px;
+.auth-buttons button,
+.btn-login {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 6px 14px;
     border-radius: 20px;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
-    margin-left: 10px;
-    backdrop-filter: blur(10px);
+    transition: 0.2s;
 }
 
-/* --- MAIN CONTENT AREA --- */
-/* Restore original layout logic: Flexbox column taking remaining space */
+.auth-buttons button:hover,
+.btn-login:hover {
+    background: #eee;
+}
+
+.online-counter {
+    background: #111;
+    color: #ccc;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 10px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #0f0;
+    border-radius: 50%;
+    box-shadow: 0 0 5px #0f0;
+}
+
+
+/* --- MAIN CHAT LAYOUT --- */
 .chat-container {
     flex: 1;
+    /* Occupy all remaining vertical space */
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    overflow: hidden;
+    background: #000;
     position: relative;
-    /* NO RED BORDER HERE ANYMORE */
+    overflow: hidden;
 }
 
 /* VIDEO GRID */
+/* This ensures videos take maximum space available before the controls */
 .video-grid {
     flex: 1;
-    /* Fill the space! */
-    display: flex;
-    flex-direction: column;
-    /* Mobile: Stacked */
-    gap: 10px;
-    min-height: 0;
-    /* Crucial for Scroll/Flex calculation */
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    /* Mobile: 50% / 50% split vertical */
+    gap: 4px;
+    padding: 4px;
+    background: #000;
+    position: relative;
 }
 
-/* Desktop: Side by Side */
+/* Desktop: Side-by-side */
 @media (min-width: 768px) {
     .video-grid {
-        flex-direction: row;
+        grid-template-rows: none;
+        grid-template-columns: 1fr 1fr;
     }
 }
 
 .video-wrapper {
-    flex: 1;
-    /* Both videos take equal space */
-    background: #000;
-    border-radius: 18px;
-    /* High Apple-style radius */
-    overflow: hidden;
     position: relative;
-    /* Subtle Glass Border */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-
+    background: #050505;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid #222;
+}
+
+/* The "Divider" - using borders to separate screens nicely */
+.video-wrapper:first-child {
+    border-bottom: 2px solid var(--neon-pink);
+}
+
+@media (min-width: 768px) {
+    .video-wrapper:first-child {
+        border-bottom: 1px solid #222;
+        border-right: 2px solid var(--neon-pink);
+    }
 }
 
 video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background: #000;
 }
 
-/* --- BUTTONS BAR --- */
-.controls-bar {
-    height: 100px;
-    /* Ample space for buttons */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    padding: 10px 20px;
-
-    /* NO BORDER TOP, just clean */
-}
-
-/* LIQUID GLASS BUTTONS - APPLE STYLE */
-.btn-control {
-    flex: 1;
-    max-width: 200px;
-    /* Don't get too wide */
-    height: 64px;
-
-    /* The Apple Glass Look */
-    background: rgba(255, 255, 255, 0.1);
-    /* Visible glass */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 24px;
-    /* Fully rounded pill shape */
-
-    color: #fff;
-    font-weight: 600;
-    font-size: 1rem;
-    text-transform: uppercase;
-    cursor: pointer;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    box-shadow:
-        0 4px 15px rgba(0, 0, 0, 0.3),
-        /* Drop shadow */
-        inset 0 1px 1px rgba(255, 255, 255, 0.4);
-    /* Top shine */
-
-    transition: all 0.2s ease;
-}
-
-.btn-control i {
-    font-size: 1.4rem;
-    margin-bottom: 2px;
-}
-
-/* Hover States */
-.btn-control:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.02);
-    box-shadow:
-        0 8px 25px rgba(255, 0, 204, 0.15),
-        /* Pink Glow on Hover */
-        inset 0 0 0 1px rgba(255, 0, 204, 0.3);
-    /* Pink Rim */
-}
-
-.btn-control:active {
-    transform: scale(0.96);
-}
-
-/* Specific button tint hints */
-.btn-stop i {
-    color: #ff4d4d;
-}
-
-.btn-next i {
-    color: #00e0ff;
-}
 
 /* --- OVERLAYS --- */
+/* Remote Loader (Waiting Screen) */
 .remote-loader {
     position: absolute;
     top: 0;
@@ -218,32 +173,40 @@ video {
     align-items: center;
     justify-content: center;
     z-index: 10;
+    pointer-events: none;
+    /* Crucial: Allows clicking thorough unless idle */
 }
 
 .remote-loader.idle {
     background: #000;
     z-index: 20;
+    /* Sit on top when idle */
+    pointer-events: auto;
+    /* Catch clicks */
 }
 
 .loader-content {
-    background: rgba(20, 20, 20, 0.8);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.9);
     padding: 30px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 0, 204, 0.2);
+    border-radius: 12px;
+    border: 1px solid var(--neon-pink);
+    box-shadow: 0 0 30px rgba(255, 0, 204, 0.2);
     text-align: center;
 }
 
 .search-text {
-    color: #fff;
+    color: var(--neon-pink);
+    font-weight: 700;
+    font-size: 1.2rem;
     margin-top: 15px;
-    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
+    width: 50px;
+    height: 50px;
+    border: 4px solid #333;
     border-top-color: var(--neon-pink);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -256,71 +219,181 @@ video {
     }
 }
 
-/* Local video overlay */
-.local-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+
+/* --- CONTROLS BAR --- */
+/* Fixed area at bottom for buttons */
+.controls-bar {
+    min-height: 100px;
+    /* Generous height for touch */
+    background: #000;
+    border-top: 1px solid var(--neon-pink);
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
-    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 20px;
+    z-index: 50;
+    gap: 15px;
 }
 
-/* Remove everything else */
-.controls-bar .control-group {
+/* BUTTONS - LIQUID GLASS NEON */
+.btn-control {
+    flex: 1;
+    /* Expand width */
+    height: 70px;
+    /* Big touch target */
+
+    /* Base style */
+    background: #111;
+    /* Fallback */
+    background: rgba(255, 255, 255, 0.05);
+    /* Glass tint */
+    border: 1px solid #333;
+    border-radius: 12px;
+
+    /* Text */
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+    /* Subtle Shadow */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Stop Button (Left) */
+.btn-stop {
+    border-color: rgba(255, 51, 51, 0.4);
+    color: #ff3333;
+}
+
+.btn-stop:hover {
+    background: rgba(255, 51, 51, 0.1);
+    box-shadow: 0 0 20px rgba(255, 51, 51, 0.3), inset 0 0 10px rgba(255, 51, 51, 0.1);
+    transform: translateY(-2px);
+    border-color: #ff3333;
+}
+
+/* Next Button (Right) */
+.btn-next {
+    border-color: rgba(0, 243, 255, 0.4);
+    color: #00f3ff;
+}
+
+.btn-next:hover {
+    background: rgba(0, 243, 255, 0.1);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.3), inset 0 0 10px rgba(0, 243, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: #00f3ff;
+}
+
+.btn-control:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* Helpers for inner text structure */
+.btn-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.big-text {
+    font-size: 1.2rem;
+}
+
+.small-text {
     display: none;
 }
 
-/* Hide old stuff if present in HTML */
+/* Hide small text for clean look */
+.btn-control i {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+}
 
-/* Toggle for Report Button in Video */
+
+/* --- REPORT BUTTON (Floats on video) --- */
 .btn-report-overlay {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    color: #fff;
-    border: 1px solid rgba(255, 50, 50, 0.5);
+    top: 15px;
+    right: 15px;
+    width: 44px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #555;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 1.2rem;
     cursor: pointer;
     z-index: 50;
-    opacity: 0.6;
-    transition: 0.3s;
+    transition: 0.2s;
 }
 
 .btn-report-overlay:hover {
-    opacity: 1;
-    background: rgba(255, 50, 50, 0.2);
+    background: #ff3333;
+    border-color: #ff3333;
+    transform: scale(1.1);
 }
 
-/* Modals */
+/* --- MODALS --- */
 .modal {
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 1000;
-    display: none;
-    justify-content: center;
+    background: rgba(0, 0, 0, 0.92);
+    z-index: 9999;
     align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
-    background: #1a1a1a;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #333;
+    background: #111;
     color: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--neon-pink);
+    box-shadow: 0 0 30px rgba(255, 0, 204, 0.3);
     max-width: 90%;
+    width: 400px;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    color: var(--neon-pink);
+}
+
+.modal-content p {
+    color: #ccc;
+    line-height: 1.5;
+}
+
+.close-modal {
+    margin-top: 20px;
+    background: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.close-modal:hover {
+    background: #555;
 }
