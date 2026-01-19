@@ -14,6 +14,7 @@ let btnStart;
 let localVideo, remoteVideo, localOverlay, remoteLoader, noPartner;
 let chatInput, chatMessages, btnSend;
 let countryModal, genderModal, countryBtn, genderBtn, onlineCount;
+let userManagement; // Add global userManagement instance
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -65,6 +66,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize authentication
     await authManager.init();
     authManager.checkMockUser();
+
+    // Initialize User Management
+    if (authManager.supabase) {
+        userManagement = new UserManagement(authManager.supabase);
+    }
 
     // Initialize WebRTC Manager
     try {
@@ -288,92 +294,7 @@ function continueAsGuest() {
     }, 1000);
 }
 
-// Start Chat
-async function startChat() {
-    console.log('🎬 Starting chat... isActive:', isActive, 'isGuest:', isGuest);
 
-    if (isActive) {
-        console.log('Already active, skipping');
-        return;
-    }
-
-    // Check if logged in (either guest or Google)
-    if (!isGuest && !authManager.currentUser) {
-        showNotification('⚠️ Bitte melde dich an oder fahre als Gast fort!');
-        console.log('Not logged in!');
-        return;
-    }
-
-    console.log('✅ User logged in, starting camera...');
-
-    try {
-        // Start local video stream - THIS REQUESTS CAMERA PERMISSION
-        console.log('Requesting camera access...');
-        const stream = await webrtcManager.startLocalStream();
-        console.log('✅ Got camera stream:', stream);
-
-        if (!localVideo || !localOverlay) {
-            throw new Error('Video elements not found');
-        }
-
-        localVideo.srcObject = stream;
-        localVideo.style.display = 'block';
-        localOverlay.style.display = 'none';
-
-        // Hide settings on mobile during chat
-        const settingsGroup = document.querySelector('.settings');
-        if (settingsGroup && window.innerWidth <= 768) {
-            settingsGroup.classList.add('hidden-during-chat');
-        }
-
-        isActive = true;
-        stopButtons.forEach(btn => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        });
-        nextButtons.forEach(btn => {
-            btn.disabled = false;
-            btn.style.opacity = '1';
-        });
-
-        // Find partner
-        const userData = {
-            isGuest: isGuest,
-            country: selectedCountry,
-            gender: selectedGender
-        };
-
-        console.log('🔍 Waiting for user to start search...');
-        // webrtcManager.findPartner(userData); // Removed auto-search
-
-        // Update UI
-        const searchText = document.querySelector('.search-text');
-        if (searchText) searchText.textContent = 'Klicke "Weiter" zum Starten';
-
-        const spinner = document.querySelector('.spinner');
-        if (spinner) spinner.style.display = 'none';
-
-        showNotification('Kamera aktiv! Klicke "Weiter" zum Starten.');
-
-    } catch (error) {
-        console.error('❌ Error starting chat:', error);
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-
-        // More specific error messages
-        if (error.name === 'NotAllowedError') {
-            alert('Kamerazugriff wurde verweigert. Bitte erlaube den Zugriff in deinen Browser-Einstellungen.');
-        } else if (error.name === 'NotFoundError') {
-            alert('Keine Kamera gefunden. Bitte stelle sicher, dass eine Kamera angeschlossen ist.');
-        } else if (error.name === 'NotReadableError') {
-            alert('Kamera wird bereits von einer anderen Anwendung verwendet.');
-        } else {
-            alert('Fehler beim Zugriff auf die Kamera: ' + error.message);
-        }
-
-        isActive = false;
-    }
-}
 
 // Stop Chat
 function stopChat() {
@@ -441,7 +362,10 @@ function stopChat() {
 }
 
 // Skip to next partner
-function skipPartner() {
+async function skipPartner() {
+    // Check ban status before skipping
+    if (await performBanCheck()) return;
+
     if (!isActive) {
         // Start chat if not active
         startChat();
@@ -738,5 +662,92 @@ function toggleReportButton(show) {
     const btn = document.getElementById('btnReport');
     if (btn) {
         btn.style.display = show ? 'flex' : 'none';
+    }
+}
+// Ban Check Helper
+async function performBanCheck() {
+    if (!userManagement || !authManager.currentUser) return false;
+
+    // Check button state to prevent double clicks while checking
+    const btnText = btnStart ? btnStart.innerText : '';
+    if (btnStart) btnStart.disabled = true;
+
+    const status = await userManagement.checkUserStatus(authManager.currentUser.id);
+
+    if (btnStart) btnStart.disabled = false;
+
+    if (!status.allowed) {
+        console.warn('User is banned:', status.reason);
+        // Show ban message
+        alert(`⛔️ DU BIST GESPERRT!\n\nGrund: ${status.reason}\n${status.hoursLeft ? 'Dauer: noch ' + status.hoursLeft + ' Stunden' : ''}`);
+
+        // Ensure UI is reset
+        if (isActive) stopChat();
+        return true; // Is banned
+    }
+    return false; // Not banned
+}
+
+// Start Chat Function (modified to include ban check)
+async function startChat() {
+    // Check ban status first
+    if (await performBanCheck()) return;
+
+    // Request permissions first
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+        // Show local video
+        localVideo.srcObject = stream;
+        localVideo.style.display = 'block';
+        localOverlay.style.display = 'none'; // Hide overlay when video is active
+
+        isActive = true;
+
+        // Update UI
+        stopButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+        nextButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
+
+        if (btnStart) {
+            btnStart.style.display = 'none'; // Hide start button
+        }
+
+        // Initialize WebRTC connection
+        if (webrtcManager) {
+            const userData = {
+                isGuest: isGuest,
+                country: selectedCountry,
+                gender: selectedGender
+            };
+            await webrtcManager.start(stream, userData);
+        }
+
+        // Show Remote Loader (Waiting for partner)
+        remoteLoader.style.display = 'flex';
+        noPartner.style.display = 'none';
+
+        // Remove idle class
+        remoteLoader.classList.remove('idle');
+        const searchText = document.querySelector('.search-text');
+        if (searchText) searchText.textContent = 'NEUER PARTNER WIRD GESUCHT';
+
+        showNotification('Kamera aktiviert. Suche Partner...');
+
+        // Hide settings on mobile
+        const settingsGroup = document.querySelector('.settings');
+        if (settingsGroup) {
+            settingsGroup.classList.add('hidden-during-chat');
+        }
+
+    } catch (error) {
+        console.error('Error accessing media devices:', error);
+        alert('Fehler: Könnte nicht auf Kamera/Mikrofon zugreifen. Bitte Berechtigungen prüfen.');
+        isActive = false;
     }
 }
