@@ -12,7 +12,7 @@ const SIAGECHAT_CONFIG = {
 
     // Feature flags
     features: {
-        guestMode: true,  // Allow users to chat without login
+        guestMode: false,  // Disabled - Google Login required!
         googleLogin: true  // Enable Google OAuth login
     }
 };
