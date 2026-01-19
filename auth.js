@@ -26,6 +26,7 @@ class AuthManager {
             if (session) {
                 this.currentUser = session.user;
                 this.updateUIForLoggedInUser();
+                this.syncUserToDB(session.user);
             }
 
             // Listen for auth state changes
@@ -234,8 +235,11 @@ class AuthManager {
                 }, { onConflict: 'user_id' });
 
             if (error) {
-                // Ignore error if table doesn't exist yet (fail silently)
-                console.warn('Sync to DB failed (table might be missing):', error.message);
+                console.error('❌ Sync to DB failed:', error.message);
+                // Try to alert user if it looks like a permission error
+                if (error.code === '42501' || error.message.includes('row-level security')) {
+                    console.warn('⚠️ RLS Policy Error: User cannot write to user_management table. Please run the FIX-DB.md SQL script.');
+                }
             } else {
                 console.log('✅ User synced to DB for admin panel');
             }
