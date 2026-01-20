@@ -3,9 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Siagechat - Video Chat v102</title>
+
+    <!-- iOS / Android Theme Color (Fixes White Bars) -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,20 +18,20 @@
         rel="stylesheet">
 
     <!-- LIBRARIES -->
-    <script src="https://kit.fontawesome.com/004068565b.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📹</text></svg>">
-    <link rel="stylesheet" href="style.css?v=102">
+    <link rel="stylesheet" href="style.css?v=106">
 </head>
 
 <body>
     <header class="main-header">
         <div class="logo-container">
             <i class="fa-solid fa-comment-dots logo-icon"></i>
-            <span>Siagechat <small style="font-size: 10px; opacity: 0.5;">v102</small></span>
+            <span>Siagechat</span>
         </div>
 
         <div class="header-right">
@@ -41,12 +45,23 @@
                     onclick="window.authManager.signInWithGoogle()">
                     <i class="fa-brands fa-google"></i> Anmelden
                 </button>
-                <button id="btnLogout" class="btn-logout" style="display: none;" onclick="window.authManager.signOut()">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-                <div id="userMenu" style="display:none; align-items:center; gap:5px;">
+
+                <!-- Logged In State Elements -->
+                <div id="userMenu" style="display:none; align-items:center; gap:10px;">
                     <img id="userAvatar" src=""
                         style="width:32px; height:32px; border-radius:50%; border:2px solid #fff;">
+
+                    <button id="btnSettings" class="btn-settings" onclick="toggleSettingsMenu()">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+
+                <!-- Settings Dropdown -->
+                <div id="settingsDropdown" class="settings-dropdown" style="display:none;">
+                    <div class="dropdown-header">Einstellungen</div>
+                    <button onclick="window.authManager.signOut()" class="dropdown-item">
+                        <i class="fa-solid fa-right-from-bracket"></i> Abmelden
+                    </button>
                 </div>
             </div>
         </div>
@@ -111,6 +126,9 @@
                 <img id="reportScreenshot" src="" style="max-width: 100%; border-radius: 8px;">
             </div>
 
+            <textarea id="reportReason" placeholder="Grund für Meldung (optional)..." rows="2"
+                style="width: 100%; background: #111; border: 1px solid #ff00cc; color: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-family: inherit; resize: none;"></textarea>
+
             <p style="margin-bottom: 20px;">Diesen Benutzer melden?</p>
             <button id="btnConfirmReport" class="btn-control liquid-glass-pink"
                 style="background: rgba(255,0,0,0.5); width: 100%; height: 50px;">
@@ -135,26 +153,39 @@
     <!-- Start Overlay (Mobile) -->
     <div id="start-overlay">
         <!-- ENABLED BY DEFAULT in v102 to handle stuck loading state -->
-        <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobileChat()">START</button>
+        <button id="mobileStartBtn" class="tap-to-start-btn" onclick="startMobilePreview()">START</button>
         <p style="margin-top: 20px; font-size: 1.2rem; color: #fff;">Tippen um Kamera zu aktivieren</p>
     </div>
 
-    <!-- Scripts v102 -->
-    <script src="config.js?v=102"></script>
-    <script src="auth.js?v=102"></script>
-    <script src="user-management.js?v=102"></script>
-    <script src="swipe.js?v=102"></script>
-    <script src="webrtc.js?v=102"></script>
-    <script src="script.js?v=102"></script>
-    <script src="report.js?v=102"></script>
-
+    <!-- Scripts v104 -->
+    <link rel="stylesheet" href="style.css?v=106">
+    <!-- and scripts below -->
+    <script src="config.js?v=106"></script>
+    <script src="auth.js?v=106"></script>
+    <script src="user-management.js?v=106"></script>
+    <script src="swipe.js?v=106"></script>
+    <script src="webrtc.js?v=106"></script>
+    <script src="script.js?v=106"></script>
+    <script src="report.js?v=106"></script>
     <script>
-        function startMobileChat() {
-            console.log("📱 Mobile Start pressed v102");
-            document.getElementById('start-overlay').style.display = 'none';
-            if (window.startChat) window.startChat();
-            else alert("WebRTC noch nicht bereit, bitte warten...");
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settingsDropdown');
+            if (menu.style.display === 'none' || !menu.style.display) {
+                menu.style.display = 'block';
+            } else {
+                menu.style.display = 'none';
+            }
         }
+        // Close menu when clicking outside
+        document.addEventListener('click', function (event) {
+            const menu = document.getElementById('settingsDropdown');
+            const btn = document.getElementById('btnSettings');
+            if (menu && btn && menu.style.display === 'block') {
+                if (!menu.contains(event.target) && !btn.contains(event.target)) {
+                    menu.style.display = 'none';
+                }
+            }
+        });
     </script>
 </body>
 

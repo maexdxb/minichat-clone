@@ -2,8 +2,8 @@
 
 const reportModal = document.getElementById('reportModal');
 const reportScreenshot = document.getElementById('reportScreenshot');
-const btnReport = document.getElementById('btn-report-overlay'); // From chat view
-const btnConfirmReport = document.getElementById('btn-confirm-report'); // In modal
+const btnReport = document.getElementById('btnReport'); // Matches HTML ID
+const btnConfirmReport = document.getElementById('btnConfirmReport'); // Matches HTML ID
 
 // Open Modal logic
 window.openReportModal = function () {
@@ -13,6 +13,10 @@ window.openReportModal = function () {
         console.error('❌ reportModal Element nicht gefunden!');
         return;
     }
+
+    // Reset previous input
+    const reasonInput = document.getElementById('reportReason');
+    if (reasonInput) reasonInput.value = '';
 
     // Capture screenshot of remote video
     const remoteVideo = document.getElementById('remoteVideo');
@@ -36,7 +40,24 @@ window.openReportModal = function () {
             console.error('❌ Fehler beim Screenshot:', e);
         }
     } else {
-        console.warn('⚠️ Kein remoteVideo oder srcObject gefunden für Screenshot');
+        console.warn('⚠️ Kein remoteVideoStream. Nutze Platzhalter.');
+        // Generate Placeholder functionality for testing/errors
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, 640, 480);
+        ctx.fillStyle = '#666';
+        ctx.font = '30px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Kein Videosignal', 320, 240);
+
+        if (reportScreenshot) {
+            reportScreenshot.src = canvas.toDataURL('image/jpeg');
+            reportScreenshot.style.display = 'block';
+        }
     }
 
     reportModal.style.display = 'flex';
@@ -91,12 +112,14 @@ if (btnConfirmReport) {
 
                 console.log('🛡️ Sende Report an Supabase für User:', reportedUserId);
 
+                const reasonText = document.getElementById('reportReason') ? document.getElementById('reportReason').value : 'Unangemessenes Verhalten';
+
                 const { error } = await window.authManager.supabase
                     .from('reports')
                     .insert({
                         reporter_id: reporterId,
                         reported_user_id: reportedUserId,
-                        reason: 'Unangemessenes Verhalten',
+                        reason: reasonText || 'Unangemessenes Verhalten',
                         screenshot: screenshotData,
                         status: 'pending'
                     });

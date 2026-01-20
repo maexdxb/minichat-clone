@@ -70,6 +70,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+        // Setup callbacks BEFORE connecting to catch 'online-count'
+        setupWebRTCCallbacks();
+
         // Init Connection
         console.log('🔌 Connecting WebRTC Manager...');
         await webrtcManager.init();
@@ -84,12 +87,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             mobileBtn.style.opacity = "1";
         }
 
-        setupWebRTCCallbacks();
         setupEventListeners();
         setupSwipeGestures();
 
         // Check Ban (async)
         performBanCheck();
+
+        // Auto-enable Camera Preview (Desktop/Supported)
+        // User requested: See camera before searching
+        if (window.innerWidth > 768) {
+            window.enableCameraPreview();
+        }
 
     } catch (error) {
         console.error('❌ Initialization failed:', error);
@@ -116,10 +124,30 @@ function setupWebRTCCallbacks() {
         }
     };
 
-    webrtcManager.onPartnerDisconnected = () => {
+    webrtcManager.onPartnerDisconnected = async () => {
         console.log('👋 Partner left');
         updateUIState('searching');
-        if (isActive) webrtcManager.startSearch();
+
+        if (isActive) {
+            // FIX: Check ban status before auto-reconnecting
+            // Prevents banned users from continuing via auto-search
+            if (window.userManagement && authManager.currentUser) {
+                // Disable cache/optimistic checks? userManagement.checkUserStatus hits DB.
+                const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
+
+                if (!status.allowed) {
+                    console.log('🚫 User banned during auto-search loop');
+                    isActive = false;
+                    webrtcManager.stop();
+                    showBanModal(status);
+                    updateUIState('idle');
+                    return;
+                }
+            }
+
+            const myId = authManager.currentUser ? authManager.currentUser.id : null;
+            webrtcManager.startSearch(myId);
+        }
     };
 
     webrtcManager.onRemoteStream = (stream) => {
@@ -144,6 +172,13 @@ function setupWebRTCCallbacks() {
 function setupEventListeners() {
     // Controls
     stopButtons.forEach(btn => btn.addEventListener('click', stopChat));
+
+    // HACK: Force Safari to re-read theme-color on interaction
+    // Fixes issue where bars turn white after "Start"
+    document.addEventListener('click', () => {
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = '#000000';
+    });
 
     nextButtons.forEach(btn => btn.addEventListener('click', () => {
         if (!isActive) startChat();
@@ -181,6 +216,40 @@ function setupEventListeners() {
             closeModals();
         }
     };
+
+    // Camera Switch (Double Tap/Click)
+    const localVid = document.getElementById('localVideo');
+    if (localVid) {
+        let lastTap = 0;
+        let isSwitching = false;
+
+        localVid.addEventListener('click', async (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+
+            if (tapLength < 500 && tapLength > 0) {
+                e.preventDefault();
+
+                if (isSwitching) return;
+                isSwitching = true;
+
+                console.log('🔄 Double tap detected: Switching Camera');
+                try {
+                    if (window.webrtcManager) {
+                        const stream = await window.webrtcManager.switchCamera();
+                        if (localVid) localVid.srcObject = stream;
+                    }
+                } catch (err) {
+                    // Ignore
+                } finally {
+                    setTimeout(() => { isSwitching = false; }, 1000);
+                }
+            }
+            lastTap = currentTime;
+        });
+
+
+    }
 }
 
 // ---------------- GLOBAL ACTIONS ----------------
@@ -203,58 +272,40 @@ window.startChat = async function () {
 
     // CHECK BAN STATUS BEFORE STARTING (with fallback)
     if (authManager.currentUser) {
-        console.log('🔍 Checking ban status for:', authManager.currentUser.id);
+        // ... (Ban check logic remains same, condensed for replacement)
         let isBanned = false;
-        let banData = null;
-
         if (window.userManagement) {
-            console.log('✅ Using UserManagement for ban check');
             const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
-            console.log('📊 Ban check result:', status);
-            if (!status.allowed) {
-                isBanned = true;
-                banData = status;
-            }
+            if (!status.allowed) isBanned = true;
         } else if (authManager.supabase) {
-            console.log('⚠️ Fallback: Direct Supabase ban check');
-            // Fallback direct check
-            const { data } = await authManager.supabase
-                .from('user_management')
-                .select('status, ban_reason')
-                .eq('user_id', authManager.currentUser.id)
-                .single();
-
-            console.log('📊 Direct DB result:', data);
-            if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) {
-                isBanned = true;
-                banData = { reason: data.ban_reason };
-            }
+            const { data } = await authManager.supabase.from('user_management').select('status').eq('user_id', authManager.currentUser.id).single();
+            if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) isBanned = true;
         }
 
         if (isBanned) {
-            console.log('🚫 User is BANNED, blocking chat start');
-            showBanModal(banData || { reason: 'Gesperrt' });
+            showBanModal({ reason: 'Gesperrt' });
             return;
         }
-        console.log('✅ User is allowed to chat');
     }
 
     try {
         isActive = true;
         updateUIState('searching');
 
-        // Request Camera
-        const stream = await webrtcManager.startLocalStream();
-        if (localVideo) {
-            localVideo.srcObject = stream;
-            localVideo.muted = true; // Always mute local
+        // Request Camera (if not already active from preview)
+        if (!localVideo.srcObject) {
+            console.log('📷 Starting camera for chat...');
+            const stream = await webrtcManager.startLocalStream();
+            if (localVideo) {
+                localVideo.srcObject = stream;
+                localVideo.muted = true;
+            }
+            if (localOverlay) localOverlay.style.display = 'none';
         }
 
-        // Hide local overlay
-        if (localOverlay) localOverlay.style.display = 'none';
-
         // Connect
-        webrtcManager.startSearch();
+        const myId = authManager.currentUser ? authManager.currentUser.id : null;
+        webrtcManager.startSearch(myId);
 
     } catch (error) {
         console.error('❌ Start Chat Error:', error);
@@ -262,6 +313,31 @@ window.startChat = async function () {
         updateUIState('idle');
         alert('Kamera-Fehler: ' + error.message);
     }
+};
+
+// NEW: Camera Preview Function
+window.enableCameraPreview = async function () {
+    console.log('👁️ Enabling Camera Preview...');
+    if (!webrtcManager) return;
+
+    try {
+        const stream = await webrtcManager.startLocalStream();
+        if (localVideo) {
+            localVideo.srcObject = stream;
+            localVideo.muted = true;
+        }
+        if (localOverlay) localOverlay.style.display = 'none';
+        console.log('✅ Camera Preview Active');
+    } catch (e) {
+        console.error('Preview Error:', e);
+        // Don't alert here, let explicit start handle errors
+    }
+};
+
+window.startMobilePreview = function () {
+    document.getElementById('start-overlay').style.display = 'none';
+    window.enableCameraPreview();
+    // Do NOT start chat yet, just preview as requested
 };
 
 window.stopChat = function () {

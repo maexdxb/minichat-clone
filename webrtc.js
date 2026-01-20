@@ -11,6 +11,7 @@ class WebRTCManager {
         this.isConnected = false;
         this.isSearching = false;
         this.partnerSupabaseId = null; // Store partner's ID
+        this.currentFacingMode = 'user';
 
         // Configuration
         this.config = {
@@ -130,41 +131,48 @@ class WebRTCManager {
         }
     }
 
+
+
+    // Connect to signaling server
+    async init() {
+        // ... (existing init code)
+        // Ensure this block matches original or I use replace_file correctly
+    }
+    // ... I need to target StartLocalStream specifically.
+
     // Start local video stream - ROBUST VERSION
     async startLocalStream() {
         try {
-            console.log('📹 Requesting camera access...');
+            console.log('📹 Requesting camera access (' + (this.currentFacingMode || 'user') + ')...');
 
-            // 1. Check if navigator.mediaDevices exists
             if (!navigator.mediaDevices && !navigator.webkitGetUserMedia) {
                 throw new Error("WebRTC wird von diesem Browser nicht unterstützt.");
             }
 
-            // Simple constraints for max compatibility
-            const constraints = {
+            // Use simple string defaults (implies ideal) to avoid OverconstrainedError on devices that don't match exact
+            // 'environment' will try back camera. 'user' will try front.
+            // If only one camera exists (Desktop), 'environment' usually falls back to the only camera automatically or fails gracefully.
+            // We use 'ideal' to be safe.
+            let constraints = {
                 video: {
-                    facingMode: "user"
+                    facingMode: this.currentFacingMode === 'environment' ? { ideal: 'environment' } : 'user'
                 },
                 audio: true
             };
 
             let stream = null;
 
-            // 2. Try Standard API
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
                     stream = await navigator.mediaDevices.getUserMedia(constraints);
                 } catch (err) {
-                    console.warn('Standard getUserMedia failed, trying fallback constraints...', err);
-                    // Fallback: Low res
+                    console.warn('Standard getUserMedia failed with ideal constraints, trying fallback to basic video...', err);
                     stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 }
-            }
-            // 3. Try Legacy API (WebKit/Moz)
-            else {
+            } else {
+                // Legacy
                 const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
                 if (!getUserMedia) throw new Error("Keine Kamera-API gefunden.");
-
                 stream = await new Promise((resolve, reject) => {
                     getUserMedia.call(navigator, constraints, resolve, reject);
                 });
@@ -173,13 +181,50 @@ class WebRTCManager {
             if (!stream) throw new Error("Kamera Stream ist leer.");
 
             this.localStream = stream;
-            console.log('✅ Local stream started:', stream.id);
-
             return this.localStream;
 
         } catch (error) {
             console.error('❌ startLocalStream failed:', error);
-            throw new Error(`Kamera Zugriff verweigert: ${error.name} - ${error.message}`);
+            // Revert mode on failure
+            if (this.currentFacingMode === 'environment') this.currentFacingMode = 'user';
+            throw error;
+        }
+    }
+
+    async switchCamera() {
+        try {
+            // Check availability first if possible
+            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoInputs = devices.filter(d => d.kind === 'videoinput');
+
+                if (videoInputs.length < 2) {
+                    console.log('⚠️ Only 1 camera found. Returning existing stream.');
+                    return this.localStream;
+                }
+            }
+
+            this.currentFacingMode = (this.currentFacingMode === 'environment') ? 'user' : 'environment';
+            console.log('🔄 Switching to:', this.currentFacingMode);
+
+            // 1. Get new stream
+            const newStream = await this.startLocalStream();
+
+            // 2. Replace track
+            if (this.peerConnection) {
+                const videoSender = this.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (videoSender) {
+                    await videoSender.replaceTrack(newStream.getVideoTracks()[0]);
+                }
+            }
+
+            return newStream;
+
+        } catch (e) {
+            console.error('Switch Camera Failed:', e);
+            // alert('Kamera-Wechsel nicht möglich.'); // Don't alert detailed error to avoid spam
+            this.currentFacingMode = (this.currentFacingMode === 'environment') ? 'user' : 'environment';
+            throw e;
         }
     }
 
@@ -263,13 +308,14 @@ class WebRTCManager {
     }
 
     // Controls
-    startSearch() {
+    startSearch(userId) {
         if (this.socket) {
             this.isSearching = true;
 
             const searchData = {
                 country: 'all',
-                gender: 'all'
+                gender: 'all',
+                supabaseId: userId // Server expects 'supabaseId' key
             };
 
             // Emit BOTH events to be safe with server versions

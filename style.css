@@ -7,6 +7,16 @@
     outline: none;
 }
 
+html {
+    background-color: #000000 !important;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    /* Lock scroll on root */
+    overscroll-behavior: none;
+    /* Prevent bounce revealing white */
+}
+
 :root {
     --bg-black: #000000;
     --neon-pink: #ff00cc;
@@ -16,16 +26,20 @@
 }
 
 body {
-    background-color: var(--bg-black);
+    background-color: #000000 !important;
+    /* Force black */
     color: var(--text-white);
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     width: 100%;
+    position: fixed;
+    /* Lock body for iOS web app feel */
+    overflow: hidden;
+    overscroll-behavior: none;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    background: radial-gradient(circle at 60% 90%, #1a0010, #000 50%);
+    /* Gradient subtle */
+    background: radial-gradient(circle at 60% 90%, #1a0010, #000000 70%);
 }
 
 /* --- LIQUID GLASS UTILITY --- */
@@ -215,6 +229,20 @@ video {
     pointer-events: auto;
 }
 
+.overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+}
+
+.overlay-content p {
+    margin: 0;
+    padding: 0;
+}
+
 .loader-content {
     padding: 30px;
     display: flex;
@@ -259,19 +287,23 @@ video {
     right: 15px;
     width: 50px;
     height: 50px;
-    background: transparent;
+    background: transparent !important;
     border: none;
     box-shadow: none;
     color: var(--neon-pink);
     font-size: 1.8rem;
-    display: flex;
+    display: flex !important;
+    /* Force visible */
     align-items: center;
     justify-content: center;
     cursor: pointer;
     pointer-events: auto;
-    z-index: 50;
-    text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
-    /* Neon Glow */
+    z-index: 1000;
+    /* High z-index to sit above overlays */
+    text-shadow: 0 0 5px var(--neon-pink);
+    /* Reduced glow */
+    opacity: 0.3;
+    /* Minimal visibility */
     transition: 0.3s;
 }
 
@@ -279,6 +311,7 @@ video {
     transform: scale(1.2);
     text-shadow: 0 0 30px #fff;
     color: #fff;
+    opacity: 1;
 }
 
 
@@ -462,4 +495,89 @@ video {
     border: 2px solid var(--neon-pink);
     box-shadow: 0 0 30px var(--neon-pink-soft);
     border-radius: 20px;
+}
+
+/* SETTINGS MENU & BURGER */
+.btn-settings {
+    background: transparent;
+    border: none;
+    color: var(--neon-pink);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 5px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-settings:hover {
+    transform: scale(1.1);
+    text-shadow: 0 0 15px var(--neon-pink);
+    color: #fff;
+}
+
+.settings-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    width: 200px;
+    background: rgba(5, 5, 5, 0.95);
+    border: 1px solid var(--neon-pink);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 0 20px rgba(255, 0, 204, 0.4);
+    z-index: 2000;
+    display: none;
+    flex-direction: column;
+    animation: fadeInMenu 0.2s ease-out;
+    backdrop-filter: blur(10px);
+}
+
+.dropdown-header {
+    color: #aaa;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.dropdown-item {
+    background: transparent;
+    border: 1px solid rgba(255, 0, 204, 0.3);
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.dropdown-item:hover {
+    background: var(--neon-pink);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-pink);
+    border-color: var(--neon-pink);
+}
+
+@keyframes fadeInMenu {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

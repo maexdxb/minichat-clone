@@ -424,7 +424,8 @@
         <div id="review-modal" class="modal">
             <div class="modal-content" style="min-width: 600px;">
                 <h2>Meldung prüfen</h2>
-                <div style="background: #f9f9f9; padding: 10px; margin-bottom: 15px; border-radius: 4px;">
+                <div
+                    style="background: #1a1a1a; padding: 15px; margin-bottom: 15px; border-radius: 4px; border: 1px solid #333;">
                     <img id="review-img" class="report-img-full" src="">
                     <p><strong>Gemeldet:</strong> <span id="review-reported-user">-</span></p>
                     <p><strong>Von:</strong> <span id="review-reporter">-</span></p>
@@ -587,13 +588,23 @@
         // --- BAN MODAL ---
         window.openBanModal = function (userId, type) {
             currentUserId = userId;
-            document.getElementById('ban-type').value = type;
-            document.getElementById('hours-group').style.display = type === 'temp' ? 'block' : 'none';
+            const typeSelect = document.getElementById('ban-type');
+            typeSelect.value = type;
+
+            // UX: Disable selection if specific type button was clicked to reduce redundancy
+            // User requested: "If I click permanent, it should just be permanent"
+            typeSelect.disabled = true;
+
+            // Check current selection after setting value to ensure correct inputs are shown
+            const selectedType = typeSelect.value;
+            document.getElementById('hours-group').style.display = selectedType === 'temp' ? 'block' : 'none';
+
             document.getElementById('ban-modal').style.display = 'flex';
         }
 
         window.closeModal = function () {
             document.getElementById('ban-modal').style.display = 'none';
+            document.getElementById('ban-type').disabled = false; // Reset
             currentUserId = null;
         }
 

@@ -4,11 +4,14 @@ class AuthManager {
         this.supabase = null;
         this.currentUser = null;
         this.initialized = false;
+        this.isInitializing = false; // Lock
         this.heartbeatInterval = null;
     }
 
     // Initialize Supabase client
     async init() {
+        if (this.initialized || this.isInitializing) return;
+        this.isInitializing = true;
         try {
             console.log('🔐 Initializing AuthManager...');
 
@@ -103,15 +106,14 @@ class AuthManager {
 
     updateUIForLoggedInUser() {
         const btnLogin = document.getElementById('btnLogin');
-        const btnLogout = document.getElementById('btnLogout');
+        // btnLogout removed, checking userMenu instead
         const userMenu = document.getElementById('userMenu');
         const userAvatar = document.getElementById('userAvatar');
 
         if (btnLogin) btnLogin.style.display = 'none';
-        if (btnLogout) btnLogout.style.display = 'flex';
 
         if (userMenu && this.currentUser) {
-            userMenu.style.display = 'flex';
+            userMenu.style.display = 'flex'; // This now shows Avatar + Burger
             if (userAvatar) {
                 userAvatar.src = this.currentUser.user_metadata.avatar_url || 'https://www.gravatar.com/avatar/?d=mp';
             }
@@ -120,12 +122,13 @@ class AuthManager {
 
     updateUIForLoggedOutUser() {
         const btnLogin = document.getElementById('btnLogin');
-        const btnLogout = document.getElementById('btnLogout');
         const userMenu = document.getElementById('userMenu');
+        const settingsMenu = document.getElementById('settingsDropdown');
 
         if (btnLogin) btnLogin.style.display = 'flex';
-        if (btnLogout) btnLogout.style.display = 'none';
+        // Hide entire user menu group (Avatar + Burger)
         if (userMenu) userMenu.style.display = 'none';
+        if (settingsMenu) settingsMenu.style.display = 'none';
     }
 
     startHeartbeat() {

@@ -68,8 +68,19 @@ class UserManagement {
         }
     }
 
+    // Helper to get email for ban
+    async _getEmailForBan(userId) {
+        const { data } = await this.supabase
+            .from('user_management')
+            .select('email')
+            .eq('user_id', userId)
+            .single();
+        return data?.email || `banned_${userId}@unknown.com`;
+    }
+
     // Ban user temporarily
     async banUserTemporary(userId, hours, reason, adminId, evidence = null) {
+        const email = await this._getEmailForBan(userId);
         const banUntil = new Date();
         banUntil.setHours(banUntil.getHours() + hours);
 
@@ -77,6 +88,7 @@ class UserManagement {
             .from('user_management')
             .upsert({
                 user_id: userId,
+                email: email, // Required constraint
                 status: 'temp_banned',
                 ban_reason: reason,
                 ban_until: banUntil.toISOString(),
@@ -96,10 +108,12 @@ class UserManagement {
 
     // Ban user permanently
     async banUserPermanent(userId, reason, adminId, evidence = null) {
+        const email = await this._getEmailForBan(userId);
         const { error } = await this.supabase
             .from('user_management')
             .upsert({
                 user_id: userId,
+                email: email, // Required constraint
                 status: 'perm_banned',
                 ban_reason: reason,
                 ban_until: null,
