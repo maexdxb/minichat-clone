@@ -504,7 +504,10 @@ window.openReportModal = function () {
 
 // Swipe Setup
 function setupSwipeGestures() {
-    const stage = document.querySelector('.chat-container') || document.querySelector('.video-grid');
+    // Target ONLY the remote video wrapper to prevent swiping on local video
+    const remoteVid = document.getElementById('remoteVideo');
+    const stage = remoteVid ? remoteVid.parentElement : document.querySelector('.chat-container');
+
     if (stage && typeof SwipeHandler !== 'undefined') {
         window.swipeHandler = new SwipeHandler(stage, {
             onSwipeLeft: () => {
