@@ -518,3 +518,16 @@ function setupSwipeGestures() {
         });
     }
 }
+
+// INITIALIZE LIQUID ETHER EFFECT
+document.addEventListener('DOMContentLoaded', () => {
+    const liquidElements = document.querySelectorAll('.liquid-background');
+    liquidElements.forEach(container => {
+        new LiquidEther(container, {
+            colors: ['#ff00cc', '#5227FF', '#FF9FFC'],
+            autoDemo: true,
+            mouseForce: 50,
+            cursorSize: 80
+        });
+    });
+});

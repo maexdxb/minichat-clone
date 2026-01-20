@@ -53,6 +53,17 @@ body {
     transition: all 0.3s ease;
 }
 
+.liquid-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
 /* --- HEADER --- */
 /* Main Header - Neon Glass Style */
 .main-header {
@@ -63,14 +74,20 @@ body {
     justify-content: space-between;
     padding: 0 20px;
     z-index: 100;
+    position: relative;
 
-    /* Transparent Shimmering Neon Pink */
-    background: rgba(20, 0, 10, 0.7);
-    /* 30% transparent dark pinkish */
+    /* Transparent Hintergrund damit Liquid sichtbar ist */
+    background: transparent;
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-bottom: 2px solid var(--neon-pink);
     box-shadow: 0 5px 30px var(--neon-pink-soft);
+}
+
+.logo-container,
+.header-right {
+    position: relative;
+    z-index: 2;
 }
 
 .logo-container {
@@ -405,13 +422,32 @@ video {
     align-items: center;
     gap: 40px;
     z-index: 50;
+    position: relative;
 
-    /* Transparent Shimmering Neon Pink - matching header */
-    background: rgba(20, 0, 10, 0.7);
+    /* Transparent Hintergrund damit Liquid sichtbar ist */
+    background: transparent;
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border-top: 2px solid var(--neon-pink);
     box-shadow: 0 -5px 30px var(--neon-pink-soft);
+}
+
+.liquid-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    border-top: 2px solid rgba(255, 0, 204, 0.2);
+    box-shadow: 0 -5px 30px rgba(255, 0, 204, 0.1);
+    z-index: 1;
+}
+
+.control-group,
+.disclaimer-text {
+    position: relative;
+    z-index: 2;
 }
 
 /* MOBILE HIDE CONTROLS */
