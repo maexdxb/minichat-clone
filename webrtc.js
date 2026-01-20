@@ -10,19 +10,16 @@ class WebRTCManager {
         this.peerConnection = null;
         this.isConnected = false;
         this.isSearching = false;
-        this.partnerSupabaseId = null; // Store partner's ID
+        this.partnerSupabaseId = null;
         this.currentFacingMode = 'user';
 
-        // Configuration
         this.config = {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
-                // Add TURN if available
             ]
         };
 
-        // Callbacks
         this.onPartnerFound = null;
         this.onPartnerDisconnected = null;
         this.onRemoteStream = null;
@@ -30,11 +27,9 @@ class WebRTCManager {
         this.onOnlineCount = null;
     }
 
-    // Connect to signaling server
     async init() {
         console.log('🔌 Connecting to signaling server:', this.signalingServerUrl);
 
-        // Load socket.io ONLY if not present
         if (typeof io === 'undefined') {
             await this.loadScript('https://cdn.socket.io/4.7.2/socket.io.min.js');
         }
@@ -51,7 +46,7 @@ class WebRTCManager {
 
             this.socket.on('connect_error', (err) => {
                 console.error('Socket error:', err);
-                // Don't reject, keep trying
+                reject(err);
             });
 
             this.setupSocketListeners();
@@ -69,42 +64,22 @@ class WebRTCManager {
     }
 
     setupSocketListeners() {
-        // Match found (New)
         this.socket.on('partner-found', (data) => this.handleMatchFound(data, 'partner-found'));
-
-        // Match found (Legacy/Fallback)
         this.socket.on('match-found', (data) => this.handleMatchFound(data, 'match-found'));
 
-        // Partner disconnected
         this.socket.on('partner-disconnected', () => {
             console.log('💔 Partner disconnected');
             this.closePeerConnection();
             this.isConnected = false;
-            if (this.onPartnerDisconnected) {
-                this.onPartnerDisconnected();
-            }
-            // Auto-search again? Handled by script.js usually
+            if (this.onPartnerDisconnected) this.onPartnerDisconnected();
         });
 
-        // WebRTC Signals
-        this.socket.on('webrtc-offer', async (data) => {
-            await this.handleOffer(data.offer);
-        });
-
-        this.socket.on('webrtc-answer', async (data) => {
-            await this.handleAnswer(data.answer);
-        });
-
-        this.socket.on('webrtc-ice-candidate', async (data) => {
-            await this.handleIceCandidate(data.candidate);
-        });
-
-        // Chat
+        this.socket.on('webrtc-offer', async (data) => await this.handleOffer(data.offer));
+        this.socket.on('webrtc-answer', async (data) => await this.handleAnswer(data.answer));
+        this.socket.on('webrtc-ice-candidate', async (data) => await this.handleIceCandidate(data.candidate));
         this.socket.on('chat-message', (data) => {
             if (this.onChatMessage) this.onChatMessage(data.message);
         });
-
-        // Online count
         this.socket.on('online-count', (count) => {
             if (this.onOnlineCount) this.onOnlineCount(count);
         });
@@ -112,228 +87,93 @@ class WebRTCManager {
 
     async handleMatchFound(data, eventName) {
         console.log(`🎉 MATCH FOUND (${eventName})!`, data);
-
-        // Store Partner ID globally for reports
         this.partnerSupabaseId = data.partnerSupabaseId;
-        // Brute force global store
         window.CURRENT_PARTNER_ID = data.partnerSupabaseId;
-        console.log('Set CURRENT_PARTNER_ID to:', window.CURRENT_PARTNER_ID);
-
         this.isSearching = false;
         this.isConnected = true;
-
-        if (data.initiator) {
-            await this.createOffer();
-        }
-
-        if (this.onPartnerFound) {
-            this.onPartnerFound(data.partnerId);
-        }
+        if (data.initiator) await this.createOffer();
+        if (this.onPartnerFound) this.onPartnerFound(data.partnerId);
     }
 
-
-
-    // Connect to signaling server
-    async init() {
-        // ... (existing init code)
-        // Ensure this block matches original or I use replace_file correctly
-    }
-    // ... I need to target StartLocalStream specifically.
-
-    // Start local video stream - ROBUST VERSION
     async startLocalStream() {
         try {
-            console.log('📹 Requesting camera access (' + (this.currentFacingMode || 'user') + ')...');
-
-            if (!navigator.mediaDevices && !navigator.webkitGetUserMedia) {
-                throw new Error("WebRTC wird von diesem Browser nicht unterstützt.");
-            }
-
-            // Use simple string defaults (implies ideal) to avoid OverconstrainedError on devices that don't match exact
-            // 'environment' will try back camera. 'user' will try front.
-            // If only one camera exists (Desktop), 'environment' usually falls back to the only camera automatically or fails gracefully.
-            // We use 'ideal' to be safe.
-            let constraints = {
-                video: {
-                    facingMode: this.currentFacingMode === 'environment' ? { ideal: 'environment' } : 'user'
-                },
+            console.log('📹 Requesting camera access...');
+            const constraints = {
+                video: { facingMode: this.currentFacingMode === 'environment' ? { ideal: 'environment' } : 'user' },
                 audio: true
             };
-
-            let stream = null;
-
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                try {
-                    stream = await navigator.mediaDevices.getUserMedia(constraints);
-                } catch (err) {
-                    console.warn('Standard getUserMedia failed with ideal constraints, trying fallback to basic video...', err);
-                    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                }
-            } else {
-                // Legacy
-                const getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-                if (!getUserMedia) throw new Error("Keine Kamera-API gefunden.");
-                stream = await new Promise((resolve, reject) => {
-                    getUserMedia.call(navigator, constraints, resolve, reject);
-                });
-            }
-
-            if (!stream) throw new Error("Kamera Stream ist leer.");
-
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
             this.localStream = stream;
             return this.localStream;
-
         } catch (error) {
             console.error('❌ startLocalStream failed:', error);
-            // Revert mode on failure
-            if (this.currentFacingMode === 'environment') this.currentFacingMode = 'user';
             throw error;
         }
     }
 
     async switchCamera() {
-        try {
-            // Check availability first if possible
-            if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoInputs = devices.filter(d => d.kind === 'videoinput');
-
-                if (videoInputs.length < 2) {
-                    console.log('⚠️ Only 1 camera found. Returning existing stream.');
-                    return this.localStream;
-                }
-            }
-
-            this.currentFacingMode = (this.currentFacingMode === 'environment') ? 'user' : 'environment';
-            console.log('🔄 Switching to:', this.currentFacingMode);
-
-            // 1. Get new stream
-            const newStream = await this.startLocalStream();
-
-            // 2. Replace track
-            if (this.peerConnection) {
-                const videoSender = this.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-                if (videoSender) {
-                    await videoSender.replaceTrack(newStream.getVideoTracks()[0]);
-                }
-            }
-
-            return newStream;
-
-        } catch (e) {
-            console.error('Switch Camera Failed:', e);
-            // alert('Kamera-Wechsel nicht möglich.'); // Don't alert detailed error to avoid spam
-            this.currentFacingMode = (this.currentFacingMode === 'environment') ? 'user' : 'environment';
-            throw e;
+        this.currentFacingMode = (this.currentFacingMode === 'environment') ? 'user' : 'environment';
+        const newStream = await this.startLocalStream();
+        if (this.peerConnection) {
+            const videoSender = this.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+            if (videoSender) await videoSender.replaceTrack(newStream.getVideoTracks()[0]);
         }
+        return newStream;
     }
 
-    // Peer Connection Management
     createPeerConnection() {
-        if (this.peerConnection) return; // Already exists
-
-        console.log('🔗 Creating RTCPeerConnection');
+        if (this.peerConnection) return;
         this.peerConnection = new RTCPeerConnection(this.config);
-
-        // Add local tracks
         if (this.localStream) {
-            this.localStream.getTracks().forEach(track => {
-                this.peerConnection.addTrack(track, this.localStream);
-            });
+            this.localStream.getTracks().forEach(track => this.peerConnection.addTrack(track, this.localStream));
         }
-
-        // Handle remote stream
         this.peerConnection.ontrack = (event) => {
-            console.log('📡 Remote track received');
             this.remoteStream = event.streams[0];
-            if (this.onRemoteStream) {
-                this.onRemoteStream(this.remoteStream);
-            }
+            if (this.onRemoteStream) this.onRemoteStream(this.remoteStream);
         };
-
-        // Handle ICE candidates
         this.peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                this.socket.emit('webrtc-ice-candidate', { candidate: event.candidate });
-            }
-        };
-
-        this.peerConnection.onconnectionstatechange = () => {
-            console.log('Connection state:', this.peerConnection.connectionState);
+            if (event.candidate) this.socket.emit('webrtc-ice-candidate', { candidate: event.candidate });
         };
     }
 
-    // Signaling Methods
     async createOffer() {
-        try {
-            this.createPeerConnection();
-            const offer = await this.peerConnection.createOffer();
-            await this.peerConnection.setLocalDescription(offer);
-            this.socket.emit('webrtc-offer', { offer });
-        } catch (error) {
-            console.error('Error creating offer:', error);
-        }
+        this.createPeerConnection();
+        const offer = await this.peerConnection.createOffer();
+        await this.peerConnection.setLocalDescription(offer);
+        this.socket.emit('webrtc-offer', { offer });
     }
 
     async handleOffer(offer) {
-        try {
-            this.createPeerConnection();
-            await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            const answer = await this.peerConnection.createAnswer();
-            await this.peerConnection.setLocalDescription(answer);
-            this.socket.emit('webrtc-answer', { answer });
-        } catch (error) {
-            console.error('Error handling offer:', error);
-        }
+        this.createPeerConnection();
+        await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await this.peerConnection.createAnswer();
+        await this.peerConnection.setLocalDescription(answer);
+        this.socket.emit('webrtc-answer', { answer });
     }
 
     async handleAnswer(answer) {
-        try {
-            if (this.peerConnection) {
-                await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-            }
-        } catch (error) {
-            console.error('Error handling answer:', error);
-        }
+        if (this.peerConnection) await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
     }
 
     async handleIceCandidate(candidate) {
-        try {
-            if (this.peerConnection) {
-                await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-            }
-        } catch (error) {
-            console.error('Error adding ICE:', error);
-        }
+        if (this.peerConnection) await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
     }
 
-    // Controls
     startSearch(userId) {
         if (this.socket) {
             this.isSearching = true;
-
-            const searchData = {
-                country: 'all',
-                gender: 'all',
-                supabaseId: userId // Server expects 'supabaseId' key
-            };
-
-            // Emit BOTH events to be safe with server versions
+            const searchData = { country: 'all', gender: 'all', supabaseId: userId };
             this.socket.emit('find-partner', searchData);
-            this.socket.emit('start-search', searchData);
-
-            console.log('🔎 Search started (sent both find-partner and start-search)...');
+            console.log('🔎 Search started...');
         }
     }
 
     sendMessage(message) {
-        if (this.socket && this.isConnected) {
-            this.socket.emit('chat-message', { message });
-        }
+        if (this.socket && this.isConnected) this.socket.emit('chat-message', { message });
     }
 
     skip() {
-        window.CURRENT_PARTNER_ID = null; // Reset report ID
+        window.CURRENT_PARTNER_ID = null;
         this.closePeerConnection();
         this.isConnected = false;
         if (this.socket) this.socket.emit('skip-partner');
@@ -360,10 +200,5 @@ class WebRTCManager {
             this.peerConnection = null;
         }
         this.remoteStream = null;
-    }
-
-    disconnect() {
-        this.stop();
-        if (this.socket) this.socket.disconnect();
     }
 }
