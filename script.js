@@ -9,14 +9,14 @@ let webrtcManager = null;
 
 try {
     if (typeof WebRTCManager !== 'undefined' && typeof SIAGECHAT_CONFIG !== 'undefined') {
-        console.log('🏗️ Instantiating WebRTCManager early...');
+        console.log('ðŸ—ï¸ Instantiating WebRTCManager early...');
         webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
         window.webrtcManager = webrtcManager;
     } else {
-        console.error('❌ WebRTCManager or Config missing at global scope!');
+        console.error('âŒ WebRTCManager or Config missing at global scope!');
     }
 } catch (e) {
-    console.error('❌ Error instantiating WebRTCManager:', e);
+    console.error('âŒ Error instantiating WebRTCManager:', e);
 }
 
 let selectedCountry = 'DE';
@@ -34,7 +34,7 @@ let userManagement;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 DOM Content Loaded - Initializing v85...');
+    console.log('ðŸš€ DOM Content Loaded - Initializing v85...');
 
     // Select DOM elements
     stopButtons = document.querySelectorAll('.btn-stop, #btnStop');
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Initialize WebRTC Manager (if not already)
     if (!webrtcManager) {
-        console.log('⚠️ WebRTCManager was null, trying to create again...');
+        console.log('âš ï¸ WebRTCManager was null, trying to create again...');
         try {
             webrtcManager = new WebRTCManager(SIAGECHAT_CONFIG.signalingServer);
             window.webrtcManager = webrtcManager;
@@ -74,10 +74,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         setupWebRTCCallbacks();
 
         // Init Connection
-        console.log('🔌 Connecting WebRTC Manager...');
+        console.log('ðŸ”Œ Connecting WebRTC Manager...');
         await webrtcManager.init();
 
-        console.log('✅ WebRTC Manager initialized & connected');
+        console.log('âœ… WebRTC Manager initialized & connected');
 
         // Enable Mobile Start Button
         const mobileBtn = document.getElementById('mobileStartBtn');
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
     } catch (error) {
-        console.error('❌ Initialization failed:', error);
+        console.error('âŒ Initialization failed:', error);
         alert('Verbindungsfehler: ' + error.message);
 
         // Safety: Enable button anyway to try again
@@ -117,7 +117,7 @@ function setupWebRTCCallbacks() {
     if (!webrtcManager) return;
 
     webrtcManager.onPartnerFound = (partnerId) => {
-        console.log('🤝 Partner found:', partnerId);
+        console.log('ðŸ¤ Partner found:', partnerId);
         updateUIState('connected');
         if (window.swipeHandler && typeof window.swipeHandler.enable === 'function') {
             window.swipeHandler.enable();
@@ -125,7 +125,7 @@ function setupWebRTCCallbacks() {
     };
 
     webrtcManager.onPartnerDisconnected = async () => {
-        console.log('👋 Partner left');
+        console.log('ðŸ‘‹ Partner left');
         updateUIState('searching');
 
         if (isActive) {
@@ -136,7 +136,7 @@ function setupWebRTCCallbacks() {
                 const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
 
                 if (!status.allowed) {
-                    console.log('🚫 User banned during auto-search loop');
+                    console.log('ðŸš« User banned during auto-search loop');
                     isActive = false;
                     webrtcManager.stop();
                     showBanModal(status);
@@ -151,7 +151,7 @@ function setupWebRTCCallbacks() {
     };
 
     webrtcManager.onRemoteStream = (stream) => {
-        console.log('📺 Received remote stream');
+        console.log('ðŸ“º Received remote stream');
         if (remoteVideo) {
             remoteVideo.srcObject = stream;
             // remoteVideo.play().catch(e => console.error('Auto-play failed', e));
@@ -202,7 +202,7 @@ function setupEventListeners() {
     // Mobile Text Update
     if (window.innerWidth <= 768) {
         const searchText = document.querySelector('.search-text');
-        if (searchText) searchText.textContent = 'WISCHE FÜR WEITER';
+        if (searchText) searchText.textContent = 'WISCHE FÃœR WEITER';
     }
 
     // Modals
@@ -233,7 +233,7 @@ function setupEventListeners() {
                 if (isSwitching) return;
                 isSwitching = true;
 
-                console.log('🔄 Double tap detected: Switching Camera');
+                console.log('ðŸ”„ Double tap detected: Switching Camera');
                 try {
                     if (window.webrtcManager) {
                         const stream = await window.webrtcManager.switchCamera();
@@ -256,7 +256,7 @@ function setupEventListeners() {
 
 // Make startChat global and robust
 window.startChat = async function () {
-    console.log('▶️ START CHAT REQUESTED');
+    console.log('â–¶ï¸ START CHAT REQUESTED');
 
     if (!webrtcManager) {
         alert('Systemfehler: WebRTC Manager nicht geladen!');
@@ -294,7 +294,7 @@ window.startChat = async function () {
 
         // Request Camera (if not already active from preview)
         if (!localVideo.srcObject) {
-            console.log('📷 Starting camera for chat...');
+            console.log('ðŸ“· Starting camera for chat...');
             const stream = await webrtcManager.startLocalStream();
             if (localVideo) {
                 localVideo.srcObject = stream;
@@ -308,7 +308,7 @@ window.startChat = async function () {
         webrtcManager.startSearch(myId);
 
     } catch (error) {
-        console.error('❌ Start Chat Error:', error);
+        console.error('âŒ Start Chat Error:', error);
         isActive = false;
         updateUIState('idle');
         alert('Kamera-Fehler: ' + error.message);
@@ -317,7 +317,7 @@ window.startChat = async function () {
 
 // NEW: Camera Preview Function
 window.enableCameraPreview = async function () {
-    console.log('👁️ Enabling Camera Preview...');
+    console.log('ðŸ‘ï¸ Enabling Camera Preview...');
     if (!webrtcManager) return;
 
     try {
@@ -327,7 +327,7 @@ window.enableCameraPreview = async function () {
             localVideo.muted = true;
         }
         if (localOverlay) localOverlay.style.display = 'none';
-        console.log('✅ Camera Preview Active');
+        console.log('âœ… Camera Preview Active');
     } catch (e) {
         console.error('Preview Error:', e);
         // Don't alert here, let explicit start handle errors
@@ -341,7 +341,7 @@ window.startMobilePreview = function () {
 };
 
 window.stopChat = function () {
-    console.log('⏹️ STOP CHAT');
+    console.log('â¹ï¸ STOP CHAT');
     isActive = false;
     if (webrtcManager) webrtcManager.stop();
 
@@ -359,19 +359,19 @@ window.stopChat = function () {
 };
 
 window.skipPartner = async function () {
-    console.log('⏭️ SKIP REQUESTED');
+    console.log('â­ï¸ SKIP REQUESTED');
 
     // STRICT BAN CHECK BEFORE SKIPPING
     if (authManager.currentUser) {
-        console.log('🔍 [SKIP] Checking ban status for:', authManager.currentUser.id);
+        console.log('ðŸ” [SKIP] Checking ban status for:', authManager.currentUser.id);
         let isBanned = false;
         let banData = null;
 
         // Try UserManagement first
         if (window.userManagement) {
-            console.log('✅ [SKIP] Using UserManagement for ban check');
+            console.log('âœ… [SKIP] Using UserManagement for ban check');
             const status = await window.userManagement.checkUserStatus(authManager.currentUser.id);
-            console.log('📊 [SKIP] Ban check result:', status);
+            console.log('ðŸ“Š [SKIP] Ban check result:', status);
             if (!status.allowed) {
                 isBanned = true;
                 banData = status;
@@ -380,14 +380,14 @@ window.skipPartner = async function () {
 
         // Fallback to direct Supabase check if needed
         if (!isBanned && authManager.supabase) {
-            console.log('⚠️ [SKIP] Fallback: Direct Supabase ban check');
+            console.log('âš ï¸ [SKIP] Fallback: Direct Supabase ban check');
             const { data } = await authManager.supabase
                 .from('user_management')
                 .select('status, ban_reason')
                 .eq('user_id', authManager.currentUser.id)
                 .single();
 
-            console.log('📊 [SKIP] Direct DB result:', data);
+            console.log('ðŸ“Š [SKIP] Direct DB result:', data);
             if (data && (data.status === 'perm_banned' || data.status === 'temp_banned')) {
                 isBanned = true;
                 banData = { reason: data.ban_reason };
@@ -395,14 +395,14 @@ window.skipPartner = async function () {
         }
 
         if (isBanned) {
-            console.log('🚫 [SKIP] User is BANNED, blocking skip');
+            console.log('ðŸš« [SKIP] User is BANNED, blocking skip');
             showBanModal(banData || { reason: 'Gesperrt' });
             if (webrtcManager) webrtcManager.stop(); // Stop current connection
             isActive = false;
             updateUIState('idle');
             return; // STOP execution
         }
-        console.log('✅ [SKIP] User is allowed to skip');
+        console.log('âœ… [SKIP] User is allowed to skip');
     }
 
     // Only if allowed:
@@ -445,7 +445,7 @@ function updateUIState(state) {
         stopButtons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
         if (remoteLoader) remoteLoader.style.display = 'flex';
         const st = document.querySelector('.search-text');
-        if (st) st.textContent = (window.innerWidth <= 768) ? 'WISCHE FÜR START' : 'KLICKE AUF WEITER';
+        if (st) st.textContent = (window.innerWidth <= 768) ? 'WISCHE FÃœR START' : 'KLICKE AUF WEITER';
     }
 }
 
@@ -464,7 +464,7 @@ function showBanModal(banStatus) {
     const durationText = document.getElementById('ban-duration-text');
     const evidenceImg = document.getElementById('ban-evidence-img');
 
-    if (reasonText) reasonText.textContent = banStatus.reason || 'Verstoß gegen Regeln';
+    if (reasonText) reasonText.textContent = banStatus.reason || 'VerstoÃŸ gegen Regeln';
 
     if (durationText) {
         if (banStatus.type === 'permanent') {
@@ -519,15 +519,4 @@ function setupSwipeGestures() {
     }
 }
 
-// INITIALIZE LIQUID ETHER EFFECT
-document.addEventListener('DOMContentLoaded', () => {
-    const liquidElements = document.querySelectorAll('.liquid-background');
-    liquidElements.forEach(container => {
-        new LiquidEther(container, {
-            colors: ['#ff00cc', '#5227FF', '#FF9FFC'],
-            autoDemo: true,
-            mouseForce: 50,
-            cursorSize: 80
-        });
-    });
-});
+// INITIALIZE LIQUID ETHER EFFECT`ndocument.addEventListener('DOMContentLoaded', () => {`n    const liquidElements = document.querySelectorAll('.liquid-background');`n    liquidElements.forEach(container => {`n        new LiquidEther(container, {`n            colors: ['#ff00cc', '#5227FF', '#FF9FFC', '#00ffff'],`n            autoDemo: true,`n            mouseForce: 150,`n            cursorSize: 80,`n            autoSpeed: 1.5,`n            autoIntensity: 4.0`n        });`n    });`n});
