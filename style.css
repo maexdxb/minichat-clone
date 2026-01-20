@@ -75,6 +75,7 @@ body {
     padding: 0 20px;
     z-index: 100;
     position: relative;
+    overflow: hidden;
 
     /* Transparent Hintergrund damit Liquid sichtbar ist */
     background: transparent;
@@ -423,6 +424,7 @@ video {
     gap: 40px;
     z-index: 50;
     position: relative;
+    overflow: hidden;
 
     /* Transparent Hintergrund damit Liquid sichtbar ist */
     background: transparent;
@@ -432,23 +434,12 @@ video {
     box-shadow: 0 -5px 30px var(--neon-pink-soft);
 }
 
-.liquid-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    border-top: 2px solid rgba(255, 0, 204, 0.2);
-    box-shadow: 0 -5px 30px rgba(255, 0, 204, 0.1);
-    z-index: 1;
-}
-
 .control-group,
 .disclaimer-text {
     position: relative;
     z-index: 2;
 }
+
 
 /* MOBILE HIDE CONTROLS */
 @media (max-width: 768px) {

@@ -519,4 +519,17 @@ function setupSwipeGestures() {
     }
 }
 
-// INITIALIZE LIQUID ETHER EFFECT`ndocument.addEventListener('DOMContentLoaded', () => {`n    const liquidElements = document.querySelectorAll('.liquid-background');`n    liquidElements.forEach(container => {`n        new LiquidEther(container, {`n            colors: ['#ff00cc', '#5227FF', '#FF9FFC', '#00ffff'],`n            autoDemo: true,`n            mouseForce: 150,`n            cursorSize: 80,`n            autoSpeed: 1.5,`n            autoIntensity: 4.0`n        });`n    });`n});
+// INITIALIZE LIQUID ETHER EFFECT
+document.addEventListener('DOMContentLoaded', () => {
+    const liquidElements = document.querySelectorAll('.liquid-background');
+    liquidElements.forEach(container => {
+        new LiquidEther(container, {
+            colors: ['#c39da8', '#e694b9', '#91738d'],
+            autoDemo: true,
+            mouseForce: 100,
+            cursorSize: 100,
+            autoSpeed: 1.0,
+            autoIntensity: 2.5
+        });
+    });
+});
