@@ -2,7 +2,7 @@
 const SIAGECHAT_CONFIG = {
     // Signaling Server URL
     // Points to Render.com deployment
-    signalingServer: 'https://minichat-clone.onrender.com',
+    signalingServer: 'https://minichat-signaling-server.onrender.com',
 
     // Supabase Configuration (Optional - for Google Login)
     supabase: {
