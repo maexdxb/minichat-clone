@@ -1,26 +1,26 @@
 /**
  * LiquidEther - Professional Fluid Simulation
- * Optimized for "Soft Glow Clouds" and smooth 5s dissipation.
+ * Optimized for "Smooth Water Waves" and high-vibrancy clouds.
  */
 
 class LiquidEther {
     constructor(container, options = {}) {
         this.container = container;
         this.options = {
-            mouseForce: options.mouseForce !== undefined ? options.mouseForce : 150,
-            cursorSize: options.cursorSize !== undefined ? options.cursorSize : 10,
+            mouseForce: options.mouseForce !== undefined ? options.mouseForce : 250,
+            cursorSize: options.cursorSize !== undefined ? options.cursorSize : 15,
             isViscous: options.isViscous !== undefined ? options.isViscous : true,
-            viscous: options.viscous !== undefined ? options.viscous : 30,
-            iterationsViscous: options.iterationsViscous || 32,
-            iterationsPoisson: options.iterationsPoisson || 32,
-            dt: options.dt || 0.014,
+            viscous: options.viscous !== undefined ? options.viscous : 40,
+            iterationsViscous: options.iterationsViscous || 48,
+            iterationsPoisson: options.iterationsPoisson || 48,
+            dt: options.dt || 0.016,
             resolution: options.resolution || 0.5,
-            colors: options.colors || ['#33001a', '#b3003b', '#ff00cc'],
+            colors: options.colors || ['#4d0033', '#b30066', '#ff00cc'], // Intensified Pink
             autoDemo: options.autoDemo !== undefined ? options.autoDemo : true,
             autoSpeed: options.autoSpeed || 0.5,
-            autoIntensity: options.autoIntensity || 2.2,
+            autoIntensity: options.autoIntensity || 2.5,
             autoResumeDelay: options.autoResumeDelay || 3000,
-            dissipation: options.dissipation || 0.985 // Stay for ~5 seconds
+            dissipation: options.dissipation || 0.982 // Stay for ~5-6 seconds
         };
 
         this.lastUserInteraction = performance.now();
@@ -66,9 +66,9 @@ class LiquidEther {
                 vec2 vel = texture2D(velocity, vUv).xy;
                 vec2 uv2 = vUv - vel * dt * ratio;
                 
-                // Edge Damping to prevent explosions
+                // Edge Damping for stability
                 float distToEdge = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));
-                float edgeFactor = smoothstep(0.0, 0.1, distToEdge);
+                float edgeFactor = smoothstep(0.0, 0.15, distToEdge);
                 
                 vec2 finalVel = texture2D(velocity, uv2).xy;
                 gl_FragColor = vec4(finalVel * dissipation * edgeFactor, 0.0, 1.0);
@@ -142,7 +142,7 @@ class LiquidEther {
             void main() {
                 vec2 circle = (vUv - 0.5) * 2.0;
                 float d = 1.0 - min(length(circle), 1.0);
-                d = pow(d, 2.5); // Softer edges for the cloud
+                d = pow(d, 2.0); // Smooth falloff for waves
                 gl_FragColor = vec4(force * d, 0.0, 1.0);
             }`;
 
@@ -153,10 +153,11 @@ class LiquidEther {
             varying vec2 vUv;
             void main() {
                 float lenv = length(texture2D(velocity, vUv).xy);
-                float glow = smoothstep(0.0, 0.5, lenv);
-                glow = pow(glow, 0.85);
+                // Intensified Glow logic
+                float glow = smoothstep(0.0, 0.45, lenv);
+                glow = pow(glow, 0.7); 
                 vec3 c = texture2D(palette, vec2(glow, 0.5)).rgb;
-                gl_FragColor = vec4(c * glow, 1.0);
+                gl_FragColor = vec4(c * glow * 1.2, 1.0);
             }`;
 
         const stops = this.options.colors;
@@ -201,16 +202,14 @@ class LiquidEther {
         const pressure = createPass(base_vert, pressure_frag, { pressure: { value: null }, velocity: { value: null }, px: { value: cellScale } });
         const output = createPass(base_vert, color_frag, { velocity: { value: fbos.v0.texture }, palette: { value: paletteTex } });
 
-        const mouse = { coords: new THREE.Vector2(), old: new THREE.Vector2(), diff: new THREE.Vector2(), isOver: false };
+        const mouse = { coords: new THREE.Vector2(0, 0), old: new THREE.Vector2(0, 0), diff: new THREE.Vector2(0, 0), currentForce: new THREE.Vector2(0, 0), isOver: false };
         const parent = this.container.parentElement;
 
         const handleMove = (x, y) => {
             const r = parent.getBoundingClientRect();
             if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
                 mouse.isOver = true;
-                const newX = ((x - r.left) / r.width) * 2 - 1;
-                const newY = -(((y - r.top) / r.height) * 2 - 1);
-                mouse.coords.set(newX, newY);
+                mouse.coords.set(((x - r.left) / r.width) * 2 - 1, -(((y - r.top) / r.height) * 2 - 1));
             } else {
                 mouse.isOver = false;
             }
@@ -232,9 +231,10 @@ class LiquidEther {
                 mouse.coords.copy(driver.current);
             }
 
-            // Smoothed diff to prevent flickering
+            // SMOOTH FORCE APPLICATION (Fixes Flickering)
             const targetDiff = new THREE.Vector2().subVectors(mouse.coords, mouse.old);
-            mouse.diff.lerp(targetDiff, 0.5);
+            mouse.diff.lerp(targetDiff, 0.4);
+            mouse.currentForce.lerp(mouse.diff, 0.6);
             mouse.old.copy(mouse.coords);
 
             // Simulation
@@ -244,7 +244,7 @@ class LiquidEther {
 
             if (mouse.isOver || isAuto) {
                 const f = isAuto ? this.options.mouseForce * this.options.autoIntensity : this.options.mouseForce;
-                externalForce.mat.uniforms.force.value.set(mouse.diff.x * f, mouse.diff.y * f);
+                externalForce.mat.uniforms.force.value.set(mouse.currentForce.x * f, mouse.currentForce.y * f);
                 externalForce.mat.uniforms.center.value.copy(mouse.coords);
                 renderer.render(externalForce.scene, externalForce.camera);
             }
