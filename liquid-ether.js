@@ -1,23 +1,24 @@
 /**
  * Vanilla JS LiquidEther
- * Ultra-Fine & Rapid Dissipation Version
+ * Ultra-Fine & Rapid Dissipation Version v2
+ * Fine-tuned for precise, thin trails and deep pink colors.
  */
 
 class LiquidEther {
     constructor(container, options = {}) {
         this.container = container;
         this.options = {
-            mouseForce: options.mouseForce || 250,
-            cursorSize: options.cursorSize || 4, // 10x smaller for ultra-fine look
-            iterationsPoisson: options.iterationsPoisson || 32,
+            mouseForce: options.mouseForce !== undefined ? options.mouseForce : 350, // Higher force for thin lines
+            cursorSize: options.cursorSize !== undefined ? options.cursorSize : 1.5, // Even smaller for needle-thin look
+            iterationsPoisson: options.iterationsPoisson || 36,
             dt: 0.016,
-            resolution: options.resolution || 4.0, // Ultra-high res
-            colors: options.colors || ['#ff1e1e', '#ff007f', '#e6007e'], // More pink-red tones
+            resolution: options.resolution || 2.0, // Limit resolution to avoid GPU crash, but keep it high
+            colors: options.colors || ['#4d000d', '#b3003b', '#ff00cc'], // Deep dark red/pink to intense pink
             autoDemo: options.autoDemo !== undefined ? options.autoDemo : true,
-            autoSpeed: options.autoSpeed || 0.5,
-            autoIntensity: options.autoIntensity || 2.2,
+            autoSpeed: options.autoSpeed || 0.4,
+            autoIntensity: options.autoIntensity || 2.0,
             autoResumeDelay: options.autoResumeDelay || 3000,
-            dissipation: 0.82 // Disappears much faster
+            dissipation: 0.55 // Disappears almost instantly after movement
         };
 
         this.lastUserInteraction = performance.now();
@@ -121,7 +122,7 @@ class LiquidEther {
             void main() {
                 vec2 circle = (vUv - 0.5) * 2.0;
                 float d = 1.0 - min(length(circle), 1.0);
-                d = pow(d, 2.0);
+                d = pow(d, 3.0); // Sharper force falloff
                 gl_FragColor = vec4(force * d, 0.0, 1.0);
             }`;
 
@@ -132,8 +133,8 @@ class LiquidEther {
             varying vec2 vUv;
             void main() {
                 float lenv = length(texture2D(velocity, vUv).xy);
-                float glow = smoothstep(0.0, 0.6, lenv);
-                glow = pow(glow, 0.8);
+                float glow = smoothstep(0.001, 0.5, lenv);
+                glow = pow(glow, 1.5); // Thinner glow
                 vec3 c = texture2D(palette, vec2(glow, 0.5)).rgb;
                 gl_FragColor = vec4(c * glow, 1.0);
             }`;
@@ -155,8 +156,8 @@ class LiquidEther {
         renderer.setSize(rect.width, rect.height);
         this.container.appendChild(renderer.domElement);
 
-        const fboW = Math.round(rect.width * this.options.resolution);
-        const fboH = Math.round(rect.height * this.options.resolution);
+        const fboW = Math.max(128, Math.round(rect.width * this.options.resolution));
+        const fboH = Math.max(128, Math.round(rect.height * this.options.resolution));
         const type = THREE.FloatType;
         const createFBO = () => new THREE.WebGLRenderTarget(fboW, fboH, { type, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
         const fbos = { v0: createFBO(), v1: createFBO(), div: createFBO(), p0: createFBO(), p1: createFBO() };
@@ -201,7 +202,7 @@ class LiquidEther {
                 mouse.coords.copy(driver.current);
             }
 
-            mouse.diff.subVectors(mouse.coords, mouse.old).multiplyScalar(0.9);
+            mouse.diff.subVectors(mouse.coords, mouse.old).multiplyScalar(1.0);
             if (isAuto) mouse.diff.multiplyScalar(this.options.autoIntensity);
             mouse.old.copy(mouse.coords);
 
