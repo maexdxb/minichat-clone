@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liquidElements = document.querySelectorAll('.liquid-background');
     liquidElements.forEach(container => {
         new LiquidEther(container, {
-            colors: ['#5227FF', '#FF9FFC', '#B19EEF'],
+            colors: ['#91738d', '#c39da8', '#e694b9'], // Colors from the liked style
             mouseForce: 20,
             cursorSize: 100,
             isViscous: true,
@@ -532,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
             iterationsViscous: 32,
             iterationsPoisson: 32,
             resolution: 0.5,
-            isBounce: false,
             autoDemo: true,
             autoSpeed: 0.5,
             autoIntensity: 2.2,
@@ -540,4 +539,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 
