@@ -525,9 +525,13 @@ document.addEventListener('DOMContentLoaded', () => {
     liquidElements.forEach(container => {
         new LiquidEther(container, {
             colors: ['#ff00cc', '#e694b9', '#91738d'],
-            mouseForce: 200,
-            cursorSize: 45,
-            resolution: 0.6,
+            mouseForce: 150,
+            cursorSize: 30,
+            isViscous: true,
+            viscous: 30,
+            iterationsViscous: 32,
+            dt: 0.014,
+            resolution: 0.5,
             autoDemo: true,
             autoSpeed: 0.5,
             autoIntensity: 2.2,
