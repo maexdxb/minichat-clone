@@ -1,23 +1,23 @@
 /**
  * Vanilla JS LiquidEther
- * Final "Fine-Smoke" Version
+ * Ultra-Fine & Rapid Dissipation Version
  */
 
 class LiquidEther {
     constructor(container, options = {}) {
         this.container = container;
         this.options = {
-            mouseForce: options.mouseForce || 180,
-            cursorSize: options.cursorSize || 40, // Much smaller for "fine" look
+            mouseForce: options.mouseForce || 250,
+            cursorSize: options.cursorSize || 4, // 10x smaller for ultra-fine look
             iterationsPoisson: options.iterationsPoisson || 32,
             dt: 0.016,
-            resolution: options.resolution || 1.0, // High res for fine details
-            colors: options.colors || ['#91738d', '#c39da8', '#e694b9'],
+            resolution: options.resolution || 4.0, // Ultra-high res
+            colors: options.colors || ['#ff1e1e', '#ff007f', '#e6007e'], // More pink-red tones
             autoDemo: options.autoDemo !== undefined ? options.autoDemo : true,
             autoSpeed: options.autoSpeed || 0.5,
             autoIntensity: options.autoIntensity || 2.2,
             autoResumeDelay: options.autoResumeDelay || 3000,
-            dissipation: 0.92 // Faster decay
+            dissipation: 0.82 // Disappears much faster
         };
 
         this.lastUserInteraction = performance.now();
@@ -132,8 +132,8 @@ class LiquidEther {
             varying vec2 vUv;
             void main() {
                 float lenv = length(texture2D(velocity, vUv).xy);
-                float glow = smoothstep(0.0, 0.45, lenv);
-                glow = pow(glow, 0.9);
+                float glow = smoothstep(0.0, 0.6, lenv);
+                glow = pow(glow, 0.8);
                 vec3 c = texture2D(palette, vec2(glow, 0.5)).rgb;
                 gl_FragColor = vec4(c * glow, 1.0);
             }`;
@@ -201,7 +201,7 @@ class LiquidEther {
                 mouse.coords.copy(driver.current);
             }
 
-            mouse.diff.subVectors(mouse.coords, mouse.old).multiplyScalar(0.8);
+            mouse.diff.subVectors(mouse.coords, mouse.old).multiplyScalar(0.9);
             if (isAuto) mouse.diff.multiplyScalar(this.options.autoIntensity);
             mouse.old.copy(mouse.coords);
 
