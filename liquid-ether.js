@@ -1,26 +1,23 @@
 /**
  * Vanilla JS LiquidEther
- * Final Premium Version: Includes Viscosity and Refined Performance.
+ * Final "Fine-Smoke" Version
  */
 
 class LiquidEther {
     constructor(container, options = {}) {
         this.container = container;
         this.options = {
-            mouseForce: options.mouseForce !== undefined ? options.mouseForce : 20,
-            cursorSize: options.cursorSize !== undefined ? options.cursorSize : 100,
-            isViscous: options.isViscous !== undefined ? options.isViscous : true,
-            viscous: options.viscous !== undefined ? options.viscous : 30,
-            iterationsViscous: options.iterationsViscous || 32,
+            mouseForce: options.mouseForce || 180,
+            cursorSize: options.cursorSize || 40, // Much smaller for "fine" look
             iterationsPoisson: options.iterationsPoisson || 32,
-            dt: options.dt || 0.014,
-            resolution: options.resolution || 0.5,
+            dt: 0.016,
+            resolution: options.resolution || 1.0, // High res for fine details
             colors: options.colors || ['#91738d', '#c39da8', '#e694b9'],
             autoDemo: options.autoDemo !== undefined ? options.autoDemo : true,
-            autoSpeed: options.autoSpeed !== undefined ? options.autoSpeed : 0.5,
-            autoIntensity: options.autoIntensity !== undefined ? options.autoIntensity : 2.2,
+            autoSpeed: options.autoSpeed || 0.5,
+            autoIntensity: options.autoIntensity || 2.2,
             autoResumeDelay: options.autoResumeDelay || 3000,
-            dissipation: options.dissipation || 0.94
+            dissipation: 0.92 // Faster decay
         };
 
         this.lastUserInteraction = performance.now();
@@ -30,7 +27,6 @@ class LiquidEther {
     init() {
         if (typeof THREE === 'undefined') return;
 
-        // --- SHADERS ---
         const base_vert = `
             precision highp float;
             attribute vec3 position;
@@ -68,24 +64,6 @@ class LiquidEther {
                 vec2 uv2 = vUv - vel * dt * ratio;
                 vec2 newVel = texture2D(velocity, uv2).xy;
                 gl_FragColor = vec4(newVel * dissipation, 0.0, 1.0);
-            }`;
-
-        const viscous_frag = `
-            precision highp float;
-            uniform sampler2D velocity;
-            uniform sampler2D velocity_new;
-            uniform float v;
-            uniform vec2 px;
-            uniform float dt;
-            varying vec2 vUv;
-            void main() {
-                vec2 old = texture2D(velocity, vUv).xy;
-                vec2 n0 = texture2D(velocity_new, vUv + vec2(px.x, 0.0)).xy;
-                vec2 n1 = texture2D(velocity_new, vUv - vec2(px.x, 0.0)).xy;
-                vec2 n2 = texture2D(velocity_new, vUv + vec2(0.0, px.y)).xy;
-                vec2 n3 = texture2D(velocity_new, vUv - vec2(0.0, px.y)).xy;
-                vec2 newv = (old + v * dt * (n0 + n1 + n2 + n3)) / (1.0 + 4.0 * v * dt);
-                gl_FragColor = vec4(newv, 0.0, 1.0);
             }`;
 
         const divergence_frag = `
@@ -154,8 +132,8 @@ class LiquidEther {
             varying vec2 vUv;
             void main() {
                 float lenv = length(texture2D(velocity, vUv).xy);
-                float glow = smoothstep(0.005, 0.4, lenv);
-                glow = pow(glow, 1.2);
+                float glow = smoothstep(0.0, 0.45, lenv);
+                glow = pow(glow, 0.9);
                 vec3 c = texture2D(palette, vec2(glow, 0.5)).rgb;
                 gl_FragColor = vec4(c * glow, 1.0);
             }`;
@@ -181,7 +159,7 @@ class LiquidEther {
         const fboH = Math.round(rect.height * this.options.resolution);
         const type = THREE.FloatType;
         const createFBO = () => new THREE.WebGLRenderTarget(fboW, fboH, { type, depthBuffer: false, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
-        const fbos = { v0: createFBO(), v1: createFBO(), vV0: createFBO(), vV1: createFBO(), div: createFBO(), p0: createFBO(), p1: createFBO() };
+        const fbos = { v0: createFBO(), v1: createFBO(), div: createFBO(), p0: createFBO(), p1: createFBO() };
         const cellScale = new THREE.Vector2(1 / fboW, 1 / fboH);
 
         const createPass = (vert, frag, uniforms) => {
@@ -192,7 +170,6 @@ class LiquidEther {
         };
 
         const advection = createPass(base_vert, advection_frag, { velocity: { value: null }, dt: { value: this.options.dt }, dissipation: { value: this.options.dissipation }, fboSize: { value: new THREE.Vector2(fboW, fboH) } });
-        const viscous = createPass(base_vert, viscous_frag, { velocity: { value: null }, velocity_new: { value: null }, v: { value: this.options.viscous }, px: { value: cellScale }, dt: { value: this.options.dt } });
         const externalForce = createPass(mouse_vert, externalForce_frag, { px: { value: cellScale }, force: { value: new THREE.Vector2() }, center: { value: new THREE.Vector2() }, scale: { value: new THREE.Vector2(this.options.cursorSize, this.options.cursorSize) } });
         externalForce.mat.transparent = true; externalForce.mat.blending = THREE.AdditiveBlending;
         const divergence = createPass(base_vert, divergence_frag, { velocity: { value: null }, dt: { value: this.options.dt }, px: { value: cellScale } });
@@ -207,6 +184,7 @@ class LiquidEther {
             mouse.coords.set(((x - r.left) / r.width) * 2 - 1, -(((y - r.top) / r.height) * 2 - 1));
             this.lastUserInteraction = performance.now();
         };
+
         target.addEventListener('mousemove', (e) => updateMouse(e.clientX, e.clientY));
         target.addEventListener('touchmove', (e) => updateMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
         target.addEventListener('mouseenter', () => mouse.isOver = true);
@@ -222,11 +200,11 @@ class LiquidEther {
                 driver.current.lerp(driver.target, 0.05 * this.options.autoSpeed);
                 mouse.coords.copy(driver.current);
             }
-            mouse.diff.subVectors(mouse.coords, mouse.old).multiplyScalar(0.7);
+
+            mouse.diff.subVectors(mouse.coords, mouse.old).multiplyScalar(0.8);
             if (isAuto) mouse.diff.multiplyScalar(this.options.autoIntensity);
             mouse.old.copy(mouse.coords);
 
-            // Simulation
             renderer.setRenderTarget(fbos.v1);
             advection.mat.uniforms.velocity.value = fbos.v0.texture;
             renderer.render(advection.scene, advection.camera);
@@ -237,20 +215,8 @@ class LiquidEther {
                 renderer.render(externalForce.scene, externalForce.camera);
             }
 
-            let vRes = fbos.v1;
-            if (this.options.isViscous) {
-                for (let i = 0; i < this.options.iterationsViscous; i++) {
-                    let vSrc = i === 0 ? fbos.v1.texture : (i % 2 === 0 ? fbos.vV1.texture : fbos.vV0.texture);
-                    let vDst = i % 2 === 0 ? fbos.vV0 : fbos.vV1;
-                    viscous.mat.uniforms.velocity.value = fbos.v1.texture;
-                    viscous.mat.uniforms.velocity_new.value = vSrc;
-                    renderer.setRenderTarget(vDst); renderer.render(viscous.scene, viscous.camera);
-                    vRes = vDst;
-                }
-            }
-
             renderer.setRenderTarget(fbos.div);
-            divergence.mat.uniforms.velocity.value = vRes.texture;
+            divergence.mat.uniforms.velocity.value = fbos.v1.texture;
             renderer.render(divergence.scene, divergence.camera);
 
             for (let i = 0; i < this.options.iterationsPoisson; i++) {
@@ -260,7 +226,7 @@ class LiquidEther {
                 renderer.setRenderTarget(dst); renderer.render(poisson.scene, poisson.camera);
             }
             renderer.setRenderTarget(fbos.v0);
-            pressure.mat.uniforms.velocity.value = vRes.texture;
+            pressure.mat.uniforms.velocity.value = fbos.v1.texture;
             pressure.mat.uniforms.pressure.value = fbos.p0.texture;
             renderer.render(pressure.scene, pressure.camera);
 
