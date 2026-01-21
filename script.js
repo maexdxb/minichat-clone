@@ -524,14 +524,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const liquidElements = document.querySelectorAll('.liquid-background');
     liquidElements.forEach(container => {
         new LiquidEther(container, {
-            colors: ['#ff00cc', '#e6007e', '#990066'], // Deep Pink Palette
-            mouseForce: 450,
-            cursorSize: 10,  // Wave-like thickness
-            resolution: 2.0,
+            colors: ['#ff00cc', '#e694b9', '#91738d'], // Neon Pink Palette matching the site
+            mouseForce: 20,
+            cursorSize: 100,
+            isViscous: true,
+            viscous: 30,
+            iterationsViscous: 32,
+            iterationsPoisson: 32,
+            dt: 0.014,
+            resolution: 0.5,
+            BFECC: true,
             autoDemo: true,
             autoSpeed: 0.5,
-            autoIntensity: 2.5,
-            autoResumeDelay: 3000
+            autoIntensity: 2.2,
+            autoResumeDelay: 3000,
+            dissipation: 0.96
         });
     });
 });
