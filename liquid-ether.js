@@ -1,27 +1,42 @@
 /**
  * Vanilla JS LiquidEther
- * Ultra-Fine & Rapid Dissipation Version v2
- * Fine-tuned for precise, thin trails and deep pink colors.
+ * High-Performance "Wave-Smoke" Version
+ * Added: Global interaction sync, better dissipation, and precise coordinate mapping.
  */
+
+// Global state to sync all instances
+if (!window.__liquidEtherSync) {
+    window.__liquidEtherSync = {
+        lastInteraction: performance.now()
+    };
+
+    // Global listener to update interaction time for all instances
+    window.addEventListener('mousemove', () => {
+        window.__liquidEtherSync.lastInteraction = performance.now();
+    }, { passive: true });
+    window.addEventListener('touchstart', () => {
+        window.__liquidEtherSync.lastInteraction = performance.now();
+    }, { passive: true });
+}
 
 class LiquidEther {
     constructor(container, options = {}) {
         this.container = container;
         this.options = {
-            mouseForce: options.mouseForce !== undefined ? options.mouseForce : 350, // Higher force for thin lines
-            cursorSize: options.cursorSize !== undefined ? options.cursorSize : 1.5, // Even smaller for needle-thin look
-            iterationsPoisson: options.iterationsPoisson || 36,
+            mouseForce: options.mouseForce !== undefined ? options.mouseForce : 300,
+            cursorSize: options.cursorSize !== undefined ? options.cursorSize : 10, // Adjusted for "wave" feel
+            iterationsPoisson: options.iterationsPoisson || 32,
             dt: 0.016,
-            resolution: options.resolution || 2.0, // Limit resolution to avoid GPU crash, but keep it high
-            colors: options.colors || ['#4d000d', '#b3003b', '#ff00cc'], // Deep dark red/pink to intense pink
+            resolution: options.resolution || 2.0,
+            colors: options.colors || ['#ff00cc', '#e6007e', '#990066'], // Intense Website Pinks
             autoDemo: options.autoDemo !== undefined ? options.autoDemo : true,
             autoSpeed: options.autoSpeed || 0.4,
             autoIntensity: options.autoIntensity || 2.0,
             autoResumeDelay: options.autoResumeDelay || 3000,
-            dissipation: 0.55 // Disappears almost instantly after movement
+            dissipation: 0.65 // Fast but smooth dissipation
         };
 
-        this.lastUserInteraction = performance.now();
+        this.rafId = null;
         this.init();
     }
 
@@ -122,7 +137,7 @@ class LiquidEther {
             void main() {
                 vec2 circle = (vUv - 0.5) * 2.0;
                 float d = 1.0 - min(length(circle), 1.0);
-                d = pow(d, 3.0); // Sharper force falloff
+                d = pow(d, 3.0); 
                 gl_FragColor = vec4(force * d, 0.0, 1.0);
             }`;
 
@@ -133,8 +148,8 @@ class LiquidEther {
             varying vec2 vUv;
             void main() {
                 float lenv = length(texture2D(velocity, vUv).xy);
-                float glow = smoothstep(0.001, 0.5, lenv);
-                glow = pow(glow, 1.5); // Thinner glow
+                float glow = smoothstep(0.0, 0.5, lenv);
+                glow = pow(glow, 0.85); 
                 vec3 c = texture2D(palette, vec2(glow, 0.5)).rgb;
                 gl_FragColor = vec4(c * glow, 1.0);
             }`;
@@ -180,22 +195,28 @@ class LiquidEther {
 
         const mouse = { coords: new THREE.Vector2(), old: new THREE.Vector2(), diff: new THREE.Vector2(), isOver: false };
         const target = this.container.parentElement;
+
         const updateMouse = (x, y) => {
             const r = target.getBoundingClientRect();
-            mouse.coords.set(((x - r.left) / r.width) * 2 - 1, -(((y - r.top) / r.height) * 2 - 1));
-            this.lastUserInteraction = performance.now();
+            // ONLY update if actually over this element to prevent cross-contamination
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+                mouse.isOver = true;
+                mouse.coords.set(((x - r.left) / r.width) * 2 - 1, -(((y - r.top) / r.height) * 2 - 1));
+            } else {
+                mouse.isOver = false;
+            }
         };
 
-        target.addEventListener('mousemove', (e) => updateMouse(e.clientX, e.clientY));
-        target.addEventListener('touchmove', (e) => updateMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
-        target.addEventListener('mouseenter', () => mouse.isOver = true);
-        target.addEventListener('mouseleave', () => mouse.isOver = false);
+        window.addEventListener('mousemove', (e) => updateMouse(e.clientX, e.clientY));
+        window.addEventListener('touchmove', (e) => updateMouse(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
 
         const driver = { current: new THREE.Vector2(), target: new THREE.Vector2() };
         const render = () => {
             const now = performance.now();
             let isAuto = false;
-            if (this.options.autoDemo && now - this.lastUserInteraction > this.options.autoResumeDelay && !mouse.isOver) {
+
+            // Sync auto-demo across all instances using global state
+            if (this.options.autoDemo && now - window.__liquidEtherSync.lastInteraction > this.options.autoResumeDelay) {
                 isAuto = true;
                 if (driver.current.distanceTo(driver.target) < 0.1) driver.target.set(Math.random() * 2 - 1, Math.random() * 2 - 1);
                 driver.current.lerp(driver.target, 0.05 * this.options.autoSpeed);
@@ -206,6 +227,7 @@ class LiquidEther {
             if (isAuto) mouse.diff.multiplyScalar(this.options.autoIntensity);
             mouse.old.copy(mouse.coords);
 
+            // Simulation
             renderer.setRenderTarget(fbos.v1);
             advection.mat.uniforms.velocity.value = fbos.v0.texture;
             renderer.render(advection.scene, advection.camera);
@@ -232,6 +254,7 @@ class LiquidEther {
             renderer.render(pressure.scene, pressure.camera);
 
             renderer.setRenderTarget(null);
+            renderer.clear(); // CRITICAL: Clear before each frame
             renderer.render(output.scene, output.camera);
             requestAnimationFrame(render);
         };
